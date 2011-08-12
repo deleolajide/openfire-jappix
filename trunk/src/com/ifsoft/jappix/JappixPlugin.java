@@ -2,16 +2,10 @@ package com.ifsoft.jappix;
 
 import org.jivesoftware.openfire.container.Plugin;
 import org.jivesoftware.openfire.container.PluginManager;
-import org.jivesoftware.admin.AuthCheckFilter;
-import org.jivesoftware.util.Log;
+import org.jivesoftware.util.*;
 import org.jivesoftware.openfire.http.HttpBindManager;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
 import java.io.File;
 
 // uncomment for openfire 3.6.4
@@ -45,14 +39,12 @@ public class JappixPlugin implements Plugin, JappixConstants {
 			ContextHandlerCollection contexts = HttpBindManager.getInstance().getContexts();
 
 			try {
-				WebAppContext context = new WebAppContext(contexts, pluginDirectory.getPath(), "/" + NAME);
-				context.setWelcomeFiles(new String[]{"index.html"});
-
+				WebAppContext context = new WebAppContext(contexts, pluginDirectory.getPath(), "/" + JiveGlobals.getProperty("jappix.webapp", NAME));
+				context.setWelcomeFiles(new String[]{"index.php"});
 			}
 			catch(Exception e) {
 
         	}
-
 		}
 		catch (Exception e) {
 			Log.error("Error initializing Jappix Plugin", e);
