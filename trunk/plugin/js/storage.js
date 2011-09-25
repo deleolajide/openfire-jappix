@@ -7,7 +7,7 @@ These are the storage JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 16/05/11
+Last revision: 26/08/11
 
 */
 
@@ -100,6 +100,9 @@ function handleStorage(iq) {
 		// Now, get the inbox
 		getStorage(NS_INBOX);
 		
+		// Geolocate the user
+		geolocate();
+		
 		$('.options-hidable').show();
 	}
 	
@@ -117,9 +120,13 @@ function handleStorage(iq) {
 		$('.inbox-hidable').show();
 	}
 	
-	// Bookmarks received (for logger)
-	else if(bookmarks.size())
+	// Bookmarks received
+	else if(bookmarks.size()) {
+		// Join the groupchats the admin defined (if any)
+		joinConfGroupchats();
+		
 		logThis('Bookmarks received.');
+	}
 	
 	// Roster notes received (for logger)
 	else if(rosternotes.size())

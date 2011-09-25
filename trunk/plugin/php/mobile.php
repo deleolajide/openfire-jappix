@@ -9,7 +9,7 @@ This is the Jappix Mobile PHP/HTML code
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 18/05/11
+Last revision: 10/07/11
 
 */
 
@@ -24,6 +24,7 @@ if(!defined('JAPPIX_BASE'))
 
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" name="viewport">
 	<title><?php _e("Jappix Mobile"); ?></title>
 	<link rel="shortcut icon" href="./favicon.ico" />
 	<?php echoGetFiles($hash, '', 'css', 'mobile.xml', ''); echo "\n"; ?>
@@ -35,24 +36,24 @@ if(!defined('JAPPIX_BASE'))
 		<div class="header">
 			<div class="mobile-images"></div>
 		</div>
-
+		
 		<noscript>
 			<div class="notification" id="noscript">
 				<?php _e("Please enable JavaScript"); ?>
 			</div>
 		</noscript>
-
+		
 		<div class="notification" id="error">
 			<?php _e("Error"); ?>
 		</div>
-
+		
 		<div class="notification" id="info">
 			<?php _e("Please wait..."); ?>
 		</div>
-
+		
 		<div class="login">
 			<?php _e("Login"); ?>
-
+			
 			<form action="#" method="post" onsubmit="return doLogin(this);">
 				<input class="xid mobile-images" type="text" name="xid" required="" />
 				<input class="password mobile-images" type="password" id="pwd" name="pwd" required="" />
@@ -62,7 +63,7 @@ if(!defined('JAPPIX_BASE'))
 				<input type="submit" name="ok" value="<?php _e("Here we go!"); ?>" />
 			</form>
 		</div>
-
+		
 		<a href="./?m=desktop<?php echo keepGet('m', false); ?>"><?php _e("Desktop"); ?></a>
 	</div>
 </body>

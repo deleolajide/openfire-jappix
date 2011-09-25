@@ -9,7 +9,7 @@ This is the design configuration POST handler (manager)
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 08/05/11
+Last revision: 25/08/11
 
 */
 
@@ -17,12 +17,99 @@ Last revision: 08/05/11
 if(!defined('JAPPIX_BASE'))
 	exit;
 
+// Handle the remove GET
+if(isset($_GET['k']) && !empty($_GET['k'])) {
+	$kill_logo = JAPPIX_BASE.'/store/logos/'.$_GET['k'].'.png';
+	
+	if(isSafe($kill_logo) && file_exists($kill_logo)) {
+		unlink($kill_logo);
+		
+		echo('<p class="info smallspace success">'.T_("The selected elements have been removed.").'</p>');
+	}
+}
+
 // Handle the remove POST
-if(isset($_POST['remove']))
+else if(isset($_POST['remove']))
 	removeElements();
 
-// Handle the upload POST
-else if(isset($_POST['upload'])) {
+// Handle the logo upload POST
+else if(isset($_POST['logo_upload'])) {
+	// Avoid errors
+	$logos_arr_1_name = $logos_arr_1_tmp = $logos_arr_2_name = $logos_arr_2_tmp = $logos_arr_3_name = $logos_arr_3_tmp = $logos_arr_4_name = $logos_arr_4_tmp = '';
+	
+	if(isset($_FILES['logo_own_1_location'])) {
+		$logos_arr_1_name = $_FILES['logo_own_1_location']['name'];
+		$logos_arr_1_tmp = $_FILES['logo_own_1_location']['tmp_name'];
+	}
+	
+	if(isset($_FILES['logo_own_2_location'])) {
+		$logos_arr_2_name = $_FILES['logo_own_2_location']['name'];
+		$logos_arr_2_tmp = $_FILES['logo_own_2_location']['tmp_name'];
+	}
+	
+	if(isset($_FILES['logo_own_3_location'])) {
+		$logos_arr_3_name = $_FILES['logo_own_3_location']['name'];
+		$logos_arr_3_tmp = $_FILES['logo_own_3_location']['tmp_name'];
+	}
+	
+	if(isset($_FILES['logo_own_4_location'])) {
+		$logos_arr_4_name = $_FILES['logo_own_4_location']['name'];
+		$logos_arr_4_tmp = $_FILES['logo_own_4_location']['tmp_name'];
+	}
+	
+	// File infos array
+	$logos = array(
+		array($logos_arr_1_name, $logos_arr_1_tmp, JAPPIX_BASE.'/store/logos/desktop_home.png'),
+		array($logos_arr_2_name, $logos_arr_2_tmp, JAPPIX_BASE.'/store/logos/desktop_app.png'),
+		array($logos_arr_3_name, $logos_arr_3_tmp, JAPPIX_BASE.'/store/logos/mobile.png'),
+		array($logos_arr_4_name, $logos_arr_4_tmp, JAPPIX_BASE.'/store/logos/mini.png')
+	);
+	
+	// Check for errors
+	$logo_error = false;
+	$logo_not_png = false;
+	$logo_anything = false;
+	
+	foreach($logos as $sub_array) {
+		// Nothing?
+		if(!$sub_array[0] || !$sub_array[1])
+			continue;
+		
+		// Not an image?
+		if(getFileExt($sub_array[0]) != 'png') {
+			$logo_not_png = true;
+			
+			continue;
+		}
+		
+		// Upload error?
+		if(!move_uploaded_file($sub_array[1], $sub_array[2])) {
+			$logo_error = true;
+			
+			continue;
+		}
+		
+		$logo_anything = true;
+	}
+	
+	// Not an image?
+	if($logo_not_png) { ?>
+		<p class="info smallspace fail"><?php _e("This is not a valid image, please use the PNG format!"); ?></p>
+	<?php }
+	
+	// Upload error?
+	else if($logo_error || !$logo_anything) { ?>
+		<p class="info smallspace fail"><?php _e("The image could not be received, would you mind retry?"); ?></p>
+	<?php }
+	
+	// Everything went fine
+	else { ?>
+		<p class="info smallspace success"><?php _e("Your service logo has been successfully changed!"); ?></p>
+	<?php }
+}
+
+// Handle the background upload POST
+else if(isset($_POST['background_upload'])) {
 	// Get the file path
 	$name_background_image = $_FILES['background_image_upload']['name'];
 	$temp_background_image = $_FILES['background_image_upload']['tmp_name'];

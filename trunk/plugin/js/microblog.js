@@ -7,7 +7,7 @@ These are the microblog JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 18/06/11
+Last revision: 27/08/11
 
 */
 
@@ -143,7 +143,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		var gLon = sGeoloc.find('lon').text();
 		
 		if(gLat && gLon) {
-			tGeoloc += '<a class="geoloc talk-images" href="http://www.openstreetmap.org/?mlat=' + encodeQuotes(gLat) + '&amp;mlon=' + encodeQuotes(gLon) + '&amp;zoom=14" target="_blank">';
+			tGeoloc += '<a class="geoloc talk-images" href="http://maps.google.com/?q=' + encodeQuotes(gLat) + ',' + encodeQuotes(gLon) + '" target="_blank">';
 			
 			// Human-readable name?
 			var gHuman = humanPosition(
@@ -949,6 +949,8 @@ function getMicroblog(xid, hash, check) {
 		requestMicroblog(xid, items, get_item, handleInitMicroblog);
 	else
 		requestMicroblog(xid, items, get_item, handleMicroblog);
+	
+	return false;
 }
 
 // Show a given microblog waiting status
@@ -1350,21 +1352,7 @@ function handleMicroblogAttach(responseXML) {
 	var dData = $(responseXML).find('jappix');
 	
 	// Process the returned data
-	if(dData.find('error').size()) {
-		openThisError(4);
-		
-		// Unlock the bubble?
-		if(!exists('#attach .one-file')) {
-			$('#attach').addClass('bubble').hide();
-			
-			// Show the bubble again!
-			showBubble('#attach');
-		}
-		
-		logThis('Error while attaching the file: ' + dData.find('error').text(), 1);
-	}
-	
-	else {
+	if(!dData.find('error').size()) {
 		// Do not allow this bubble to be hidden
 		$('#attach').removeClass('bubble');
 		
@@ -1392,6 +1380,21 @@ function handleMicroblogAttach(responseXML) {
 		});
 		
 		logThis('File attached.', 3);
+	}
+	
+	// Any error?
+	else {
+		openThisError(4);
+		
+		// Unlock the bubble?
+		if(!exists('#attach .one-file')) {
+			$('#attach').addClass('bubble').hide();
+			
+			// Show the bubble again!
+			showBubble('#attach');
+		}
+		
+		logThis('Error while attaching the file: ' + dData.find('error').text(), 1);
 	}
 	
 	// Reset the attach bubble

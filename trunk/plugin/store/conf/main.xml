@@ -4,10 +4,11 @@
 	<desc>a free social network</desc>
 	<resource>Jappix</resource>
 	<lock>on</lock>
-	<anonymous>off</anonymous>
-	<registration>off</registration>
+	<anonymous>on</anonymous>
+	<registration>on</registration>
 	<bosh_proxy>off</bosh_proxy>
 	<manager_link>on</manager_link>
+	<groupchats_join></groupchats_join>
 	<encryption>off</encryption>
 	<https_storage>off</https_storage>
 	<https_force>off</https_force>

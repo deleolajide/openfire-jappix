@@ -7,7 +7,7 @@ These are the notification JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 20/05/11
+Last revision: 27/08/11
 
 */
 
@@ -61,6 +61,7 @@ function newNotification(type, from, data, body, id, inverse) {
 	
 	// Generate the text to be displayed
 	var text, action, code;
+	var yes_path = 'href="#"';
 	
 	// User things
 	from = bareXID(from);
@@ -79,7 +80,7 @@ function newNotification(type, from, data, body, id, inverse) {
 			break;
 		
 		case 'invite_room':
-			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + _e("would like you to join this chatroom:") + ' <em>' + data[0] + '</em> ' + _e("Do you accept?");
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + _e("would like you to join this chatroom:") + ' <em>' + data[0].htmlEnc() + '</em> ' + _e("Do you accept?");
 			
 			break;
 		
@@ -88,38 +89,65 @@ function newNotification(type, from, data, body, id, inverse) {
 			
 			break;
 		
+		case 'send':
+			yes_path = 'href="' + encodeQuotes(data[1]) + '" target="_blank"';
+			
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("would like to send you a file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>') + ' ' + _e("Do you accept?");
+			
+			break;
+		
+		case 'send_pending':
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("has received a file exchange request: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
+			
+			break;
+		
+		case 'send_accept':
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("has accepted to received your file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
+			
+			break;
+		
+		case 'send_reject':
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("has rejected to receive your file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
+			
+			break;
+		
+		case 'send_fail':
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("could not receive your file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
+			
+			break;
+		
 		case 'rosterx':
-			text = printf(_e("Do you want to see the friends %s suggests you?"), '<b>' + getBuddyName(from).htmlEnc() + '</b>');
+			text = printf(_e("Do you want to see the friends %s suggests you?").htmlEnc(), '<b>' + getBuddyName(from).htmlEnc() + '</b>');
 			
 			break;
 		
 		case 'comment':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("commented an item you follow: “%s”."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("commented an item you follow: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
 		case 'like':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("liked your post: “%s”."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("liked your post: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
 		case 'quote':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("quoted you somewhere: “%s”."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("quoted you somewhere: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
 		case 'wall':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("published on your wall: “%s”."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("published on your wall: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
 		case 'photo':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("tagged you in a photo (%s)."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("tagged you in a photo (%s).").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
 		case 'video':
-			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("tagged you in a video (%s)."), '<em>' + truncate(body, 25) + '</em>');
+			text = '<b>' + data[0].htmlEnc() + '</b> ' + printf(_e("tagged you in a video (%s).").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
@@ -132,16 +160,16 @@ function newNotification(type, from, data, body, id, inverse) {
 		return;
 	
 	// Action links?
-	if((type == 'comment') || (type == 'like') || (type == 'quote') || (type == 'wall') || (type == 'photo') || (type == 'video')) {
+	if((type == 'send_pending') || (type == 'send_accept') || (type == 'send_reject') || (type == 'send_fail') || (type == 'comment') || (type == 'like') || (type == 'quote') || (type == 'wall') || (type == 'photo') || (type == 'video')) {
 		action = '<a href="#" class="no">' + _e("Hide") + '</a>';
 		
 		// Any parent link?
-		if(data[2] && (type == 'comment'))
+		if((type == 'comment') && data[2])
 			action = '<a href="#" class="yes">' + _e("Show") + '</a>' + action;
 	}
 	
 	else	
-		action = '<a href="#" class="yes">' + _e("Yes") + '</a><a href="#" class="no">' + _e("No") + '</a>';
+		action = '<a ' + yes_path + ' class="yes">' + _e("Yes") + '</a><a href="#" class="no">' + _e("No") + '</a>';
 	
 	if(text) {
 		// We display the notification
@@ -170,7 +198,10 @@ function newNotification(type, from, data, body, id, inverse) {
 			
 			// The yes click function
 			$('.' + id + ' a.yes').click(function() {
-				return actionNotification(type, data, 'yes', id);
+				actionNotification(type, data, 'yes', id);
+				
+				if(($(this).attr('href') == '#') && ($(this).attr('target') != '_blank'))
+					return false;
 			});
 			
 			// The no click function
@@ -203,6 +234,12 @@ function actionNotification(type, data, value, id) {
 	
 	else if(type == 'request')
 		requestReply(value, data[0]);
+	
+	if((type == 'send') && (value == 'yes'))
+		replyOOB(data[0], data[3], 'accept', data[2], data[4]);
+	
+	else if((type == 'send') && (value == 'no'))
+		replyOOB(data[0], data[3], 'reject', data[2], data[4]);
 	
 	else if((type == 'rosterx') && (value == 'yes'))
 		openRosterX(data[0]);

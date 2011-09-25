@@ -7,7 +7,7 @@ These are the tooltip JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 23/06/11
+Last revision: 27/08/11
 
 */
 
@@ -16,9 +16,10 @@ function createTooltip(xid, hash, type) {
 	// Path to the element
 	var path = '#' + hash;
 	var path_tooltip = path + ' .chat-tools-' + type;
+	var path_bubble = path_tooltip + ' .bubble-' + type;
 	
 	// Yet exists?
-	if(exists(path_tooltip + ' .bubble-' + type))
+	if(exists(path_bubble))
 		return false;
 	
 	// Generates special tooltip HTML code
@@ -48,6 +49,14 @@ function createTooltip(xid, hash, type) {
 				'<a href="#" class="color" style="background-color: #04228f;" data-color="04228f"></a>' + 
 				'<a href="#" class="color" style="background-color: #9d0ab7;" data-color="9d0ab7"></a>' + 
 				'<a href="#" class="color" style="background-color: #8a8a8a;" data-color="8a8a8a"></a>';
+			
+			break;
+		
+		// File send
+		case 'file':
+			title = _e("Send a file");
+			content = '<p style="margin-bottom: 8px;">' + _e("Once uploaded, your friend will be prompted to download the file you sent.") + '</p>';
+			content += '<form id="oob-upload" action="./php/send.php" method="post" enctype="multipart/form-data">' + generateFileShare() + '</form>';
 			
 			break;
 		
@@ -148,6 +157,52 @@ function createTooltip(xid, hash, type) {
 			
 			break;
 		
+		// File send
+		case 'file':
+			// File upload vars
+			var oob_upload_options = {
+				dataType:	'xml',
+				beforeSubmit:	waitUploadOOB,
+				success:	handleUploadOOB
+			};
+			
+			// Upload form submit event
+			$(path_tooltip + ' #oob-upload').submit(function() {
+				if($(path_tooltip + ' #oob-upload input[type=file]').val())
+					$(this).ajaxSubmit(oob_upload_options);
+				
+				return false;
+			});
+			
+			// Upload input change event
+			$(path_tooltip + ' #oob-upload input[type=file]').change(function() {
+				if($(this).val())
+					$(path_tooltip + ' #oob-upload').ajaxSubmit(oob_upload_options);
+				
+				return false;
+			});
+			
+			// Input click event
+			$(path_tooltip + ' #oob-upload input[type=file], ' + path_tooltip + ' #oob-upload input[type=submit]').click(function() {
+				if(exists(path_tooltip + ' #oob-upload input[type=reset]'))
+					return;
+				
+				// Lock the bubble
+				$(path_bubble).addClass('locked');
+				
+				// Add a cancel button
+				$(this).after('<input type="reset" value="' + _e("Cancel") + '" />');
+				
+				// Cancel button click event
+				$(path_tooltip + ' #oob-upload input[type=reset]').click(function() {
+					// Remove the bubble
+					$(path_bubble).removeClass('locked');
+					destroyTooltip(hash, 'file');
+				});
+			});
+			
+			break;
+		
 		// Chat log
 		case 'save':
 			// Chat log generation click event
@@ -168,7 +223,7 @@ function createTooltip(xid, hash, type) {
 
 // Destroys a tooltip code
 function destroyTooltip(hash, type) {
-	$('#' + hash + ' .chat-tools-content .bubble-' + type).remove();
+	$('#' + hash + ' .chat-tools-content:not(.mini) .bubble-' + type + ':not(.locked)').remove();
 }
 
 // Applies the page-engine tooltips hover event
@@ -185,6 +240,7 @@ function tooltipIcons(xid, hash) {
 	// Hover events
 	hoverTooltip(xid, hash, 'smileys');
 	hoverTooltip(xid, hash, 'style');
+	hoverTooltip(xid, hash, 'file');
 	hoverTooltip(xid, hash, 'save');
 	
 	// Click events

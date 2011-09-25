@@ -6,8 +6,8 @@ These are the groupchat JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Authors: Valérian Saliou, Marco Cirillo
-Last revision: 11/05/11
+Authors: Valérian Saliou, Marco Cirillo, Eric Yu
+Last revision: 28/08/11
 
 */
 
@@ -211,10 +211,17 @@ function groupchatCreate(hash, room, chan, nickname, password) {
 	inputDetect.keypress(function(e) {
 		// Enter key
 		if(e.keyCode == 13) {
-			sendMessage(hash, 'groupchat');
+			// Add a new line
+			if(e.shiftKey)
+				inputDetect.val(inputDetect.val() + '\n');
 			
-			// Reset the composing database entry
-			setDB('chatstate', room, 'off');
+			// Send the message
+			else {
+				sendMessage(hash, 'groupchat');
+				
+				// Reset the composing database entry
+				setDB('chatstate', room, 'off');
+			}
 			
 			return false;
 		}
@@ -236,4 +243,41 @@ function groupchatCreate(hash, room, chan, nickname, password) {
 	
 	// Get the current muc informations and content
 	getMUC(room, nickname, password);
+}
+
+// Joins the defined groupchats
+function joinConfGroupchats() {
+	// Nothing to join?
+	if(!GROUPCHATS_JOIN)
+		return;
+	
+	// Values array
+	var muc_arr = [GROUPCHATS_JOIN];
+	var new_arr = [];
+	
+	// Try to split it
+	if(GROUPCHATS_JOIN.indexOf(',') != -1)
+		muc_arr = GROUPCHATS_JOIN.split(',');
+	
+	for(i in muc_arr) {
+		// Get the current value
+		var muc_current = trim(muc_arr[i]);
+		
+		// No current value?
+		if(!muc_current)
+			continue;
+		
+		// Filter the current value
+		muc_current = generateXID(muc_current, 'groupchat');
+		
+		// Add the current value
+		if(!existArrayValue(new_arr, muc_current))
+			new_arr.push(muc_current);
+	}
+	
+	// Join the chats
+	if(new_arr.length) {
+		for(g in new_arr)
+			checkChatCreate(new_arr[g], 'groupchat');
+	}
 }

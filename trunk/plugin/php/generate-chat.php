@@ -9,7 +9,7 @@ This is the PHP script used to generate a chat log
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 27/05/11
+Last revision: 26/08/11
 
 */
 
@@ -60,6 +60,9 @@ if(isset($_POST['content']) && isset($_POST['xid']) && !empty($_POST['xid']) && 
 	$content_dir = '../store/logs/';
 	$filename = 'chat_log-'.md5($xid.time());
 	$filepath = $content_dir.$filename.'.html';
+	
+	// Generate Jappix logo Base64 code
+	$logo = base64_encode(file_get_contents(JAPPIX_BASE.'/img/sprites/logs.png'));
 	
 	// Create the HTML code
 	$new_text_inter = 
@@ -125,6 +128,12 @@ if(isset($_POST['content']) && isset($_POST['xid']) && !empty($_POST['xid']) && 
 		#head h3,
 		#head h5 {
 			text-shadow: 0 0 1px black;
+		}
+		
+		#head a.logo {
+			position: absolute;
+			top: 16px;
+			right: 20px;
 		}
 		
 		#content {
@@ -195,6 +204,10 @@ if(isset($_POST['content']) && isset($_POST['xid']) && !empty($_POST['xid']) && 
 		<h1>'.$nick.'</h1>
 		<h3><a href="'.$xid_link.'">'.$xid.'</a></h3>
 		<h5>'.$date.'</h5>
+		
+		<a class="logo" href="https://project.jappix.com/" target="_blank">
+			<img src="data:image/png;base64,'.$logo.'" alt="" />
+		</a>
 	</div>
 	
 	<div id="content">

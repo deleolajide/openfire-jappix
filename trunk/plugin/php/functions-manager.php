@@ -9,7 +9,7 @@ These are the PHP functions for Jappix manager
 
 License: AGPL
 Authors: Valérian Saliou, Mathieui, Olivier Migeot
-Last revision: 08/05/11
+Last revision: 27/08/11
 
 */
 
@@ -446,10 +446,10 @@ function otherStats() {
 	$others_stats = array(
 			     	T_("Backgrounds") => sizeDir(JAPPIX_BASE.'/store/backgrounds/'),
 			     	T_("Cache") => sizeDir(JAPPIX_BASE.'/store/cache/'),
-			     	T_("Configuration") => sizeDir(JAPPIX_BASE.'/store/conf/'),
 			     	T_("Logs") => sizeDir(JAPPIX_BASE.'/store/logs/'),
 			     	T_("Music") => sizeDir(JAPPIX_BASE.'/store/music/'),
 			     	T_("Share") => sizeDir(JAPPIX_BASE.'/store/share/'),
+			     	T_("Send") => sizeDir(JAPPIX_BASE.'/store/send/'),
 			     	T_("Updates") => sizeDir(JAPPIX_BASE.'/store/updates/')
 			     );
 	
@@ -540,7 +540,7 @@ function purgeFolder($folder) {
 	
 	// We must purge all the folders?
 	if($folder == 'everything')
-		array_push($array, 'cache', 'logs', 'updates');
+		array_push($array, 'cache', 'logs', 'send', 'updates');
 	else
 		array_push($array, $folder);
 	
@@ -572,7 +572,7 @@ function browseFolder($folder, $mode) {
 	$directory = JAPPIX_BASE.'/store/'.$folder;
 	$scan = scandir($directory);
 	$scan = array_diff($scan, array('.', '..', '.svn', 'index.html'));
-	$keep_get = keepGet('(s|b)', false);
+	$keep_get = keepGet('(s|b|k)', false);
 	
 	// Odd/even marker
 	$marker = 'odd';
@@ -677,6 +677,16 @@ function browseUsers() {
 		else
 			$marker = 'odd';
 	}
+}
+
+// Generates the logo form field
+function logoFormField($id, $name) {
+	if(file_exists(JAPPIX_BASE.'/store/logos/'.$name.'.png'))
+		echo '<span class="logo_links"><a class="remove manager-images" href="./?k='.urlencode($name).keepGet('k', false).'" title="'.T_("Remove this logo").'"></a><a class="view manager-images" href="./store/logos/'.$name.'.png" target="_blank" title="'.T_("View this logo").'"></a></span>';
+	else
+		echo '<input id="logo_own_'.$id.'_location" type="file" name="logo_own_'.$id.'_location" accept="image/*" />';
+	
+	echo "\n";
 }
 
 // Reads the background configuration

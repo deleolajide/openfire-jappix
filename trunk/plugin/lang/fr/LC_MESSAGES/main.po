@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Jappix\n"
-"PO-Revision-Date: 2011-06-24 15:59:54\n"
+"PO-Revision-Date: 2011-08-28 15:23:05\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2300,4 +2300,132 @@ msgstr "Serveur d'envois des utilisateurs"
 #: 
 msgid "This is the user uploads server for %1s, “%2s”."
 msgstr "Ceci est le serveur d'envois des utilisateurs pour %1s, « %2s »."
+
+#: 
+msgid "Logo"
+msgstr "Logo"
+
+#: 
+msgid "You can set your own service logo to replace the default one. Take care of the size and the main color of each logo!"
+msgstr "Vous pouvez appliquez votre propre logo pour votre service et ainsi remplacer celui par défaut. Faites attention à la taille et la couleur dominante de chaque logo !"
+
+#: 
+#~ msgid "Use default logo"
+#~ msgstr "Utiliser le logo par défaut"
+
+#: 
+#~ msgid "Use your own logo"
+#~ msgstr "Utiliser votre propre logo"
+
+#: 
+msgid "Upload each logo with the recommended maximum pixel size."
+msgstr "Envoyez chaque logo avec la taille maximum en pixel que nous vous recommandons."
+
+#: 
+#~ msgid "The recommended image format is PNG. Leave a field empty and the logo will not be changed."
+#~ msgstr "Le format d'image recommandé est PNG. Laisser un champ vide ne changera pas le logo correspondant."
+
+#: 
+msgid "This is not a valid image, please use the PNG format!"
+msgstr "Ce n'est pas une image valide, veuillez utiliser le format PNG !"
+
+#: 
+msgid "Your service logo has been successfully changed!"
+msgstr "Le logo de votre service a été changé avec succès !"
+
+#: 
+msgid "Your logo format must be PNG. Leave a field empty and the logo will not be changed."
+msgstr "Le format de votre logo doit être PNG. Laissez un champ vide et le logo correspondant ne sera pas changé."
+
+#: 
+msgid "Remove this logo"
+msgstr "Supprimer ce logo"
+
+#: 
+msgid "View this logo"
+msgstr "Visualiser ce logo"
+
+#: 
+msgid "Send a file"
+msgstr "Envoi d'un fichier"
+
+#: 
+msgid "Once uploaded, your friend will be prompted to download the file you sent."
+msgstr "Une fois envoyé, votre ami sera invité à télécharger le fichier."
+
+#: 
+msgid "Groupchats to join"
+msgstr "Salons à rejoindre"
+
+#: 
+msgid "Purge sent files"
+msgstr "Purger les fichiers envoyés"
+
+#: 
+msgid "would like to send you a file: “%s”."
+msgstr "voudrait vous envoyer un fichier : « %s »."
+
+#: 
+msgid "has accepted to received your file: “%s”."
+msgstr "a accepté de recevoir votre fichier : « %s »."
+
+#: 
+msgid "has rejected to receive your file: “%s”."
+msgstr "a refusé de recevoir votre fichier : « %s »."
+
+#: 
+msgid "could not receive your file: “%s”."
+msgstr "n'a pas pu recevoir votre fichier : « %s »."
+
+#: 
+msgid "has received a file exchange request: “%s”."
+msgstr "a reçu une demande d'échange de fichier : « %s »."
+
+#: 
+msgid "Available shortcuts:"
+msgstr "Raccourcis disponibles :"
+
+#: 
+msgid "%s removes the chat logs"
+msgstr "%s efface l'historique de la discussion"
+
+#: 
+msgid "%s joins a groupchat"
+msgstr "%s rejoint un salon"
+
+#: 
+msgid "%s closes the chat"
+msgstr "%s ferme la discussion"
+
+#: 
+msgid "%s shows the user profile"
+msgstr "%s affiche le profil de l'utilisateur"
+
+#: 
+msgid "%s sends a message to the room"
+msgstr "%s envoie un message au salon"
+
+#: 
+msgid "%s changes your nickname"
+msgstr "%s modifie votre pseudonyme"
+
+#: 
+msgid "%s sends a message to someone in the room"
+msgstr "%s envoie un message à quelqu'un du salon"
+
+#: 
+msgid "%s changes the room topic"
+msgstr "%s modifie le sujet du salon"
+
+#: 
+msgid "%s kicks an user of the room"
+msgstr "%s éjecte un utilisateur du salon"
+
+#: 
+msgid "%s bans an user of the room"
+msgstr "%s banni un utilisateur du salon"
+
+#: 
+msgid "%s invites someone to join the room"
+msgstr "%s invite quelqu'un à rejoindre le salon"
 

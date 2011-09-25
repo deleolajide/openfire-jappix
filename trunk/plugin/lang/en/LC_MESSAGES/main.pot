@@ -5,7 +5,7 @@
 
 # License: AGPL
 # Authors: Valérian Saliou, Jan-Christoph Borchardt
-# Last revision: 27/05/11
+# Last revision: 28/08/11
 
 msgid "JavaScript is missing in your web browser, so that you will not be able to launch Jappix! Please fix this."
 msgstr ""
@@ -439,6 +439,12 @@ msgstr ""
 msgid "Underlined text"
 msgstr ""
 
+msgid "Send a file"
+msgstr ""
+
+msgid "Once uploaded, your friend will be prompted to download the file you sent."
+msgstr ""
+
 msgid "Save chat"
 msgstr ""
 
@@ -826,6 +832,21 @@ msgstr ""
 msgid "would like to get authorization."
 msgstr ""
 
+msgid "would like to send you a file: “%s”."
+msgstr ""
+
+msgid "has received a file exchange request: “%s”."
+msgstr ""
+
+msgid "has accepted to received your file: “%s”."
+msgstr ""
+
+msgid "has rejected to receive your file: “%s”."
+msgstr ""
+
+msgid "could not receive your file: “%s”."
+msgstr ""
+
 msgid "Do you want to see the friends %s suggests you?"
 msgstr ""
 
@@ -1138,6 +1159,9 @@ msgstr ""
 msgid "Manager link"
 msgstr ""
 
+msgid "Groupchats to join"
+msgstr ""
+
 msgid "Encryption"
 msgstr ""
 
@@ -1300,13 +1324,37 @@ msgstr ""
 msgid "This is not a valid image, please use PNG, GIF or JPG!"
 msgstr ""
 
+msgid "This is not a valid image, please use the PNG format!"
+msgstr ""
+
 msgid "The image could not be received, would you mind retry?"
+msgstr ""
+
+msgid "Your service logo has been successfully changed!"
 msgstr ""
 
 msgid "Your image was added to the list!"
 msgstr ""
 
 msgid "Changes saved!"
+msgstr ""
+
+msgid "Logo"
+msgstr ""
+
+msgid "You can set your own service logo to replace the default one. Take care of the size and the main color of each logo!"
+msgstr ""
+
+msgid "Upload each logo with the recommended maximum pixel size."
+msgstr ""
+
+msgid "Your logo format must be PNG. Leave a field empty and the logo will not be changed."
+msgstr ""
+
+msgid "Remove this logo"
+msgstr ""
+
+msgid "View this logo"
 msgstr ""
 
 msgid "You can define more than one administrator for this Jappix node. You can also change a password with this tool."
@@ -1543,6 +1591,9 @@ msgstr ""
 msgid "Purge logs"
 msgstr ""
 
+msgid "Purge sent files"
+msgstr ""
+
 msgid "Purge updates"
 msgstr ""
 
@@ -1724,4 +1775,40 @@ msgid "Send him/her a message"
 msgstr ""
 
 msgid "Start a chat with him/her"
+msgstr ""
+
+msgid "Available shortcuts:"
+msgstr ""
+
+msgid "%s removes the chat logs"
+msgstr ""
+
+msgid "%s joins a groupchat"
+msgstr ""
+
+msgid "%s closes the chat"
+msgstr ""
+
+msgid "%s shows the user profile"
+msgstr ""
+
+msgid "%s sends a message to the room"
+msgstr ""
+
+msgid "%s changes your nickname"
+msgstr ""
+
+msgid "%s sends a message to someone in the room"
+msgstr ""
+
+msgid "%s changes the room topic"
+msgstr ""
+
+msgid "%s kicks an user of the room"
+msgstr ""
+
+msgid "%s bans an user of the room"
+msgstr ""
+
+msgid "%s invites someone to join the room"
 msgstr ""

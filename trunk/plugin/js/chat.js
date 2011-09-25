@@ -6,8 +6,8 @@ These are the chat JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 19/05/11
+Author: Valérian Saliou, Eric Yu
+Last revision: 02/08/11
 
 */
 
@@ -151,6 +151,10 @@ function generateChat(type, id, xid, nick) {
 					
 					specialStylePicker + 
 					
+					'<div class="chat-tools-content chat-tools-file">' + 
+						'<a href="#" class="tools-file tools-tooltip talk-images"></a>' + 
+					'</div>' + 
+					
 					'<div class="chat-tools-content chat-tools-save">' + 
 						'<a href="#" class="tools-save tools-tooltip talk-images"></a>' + 
 					'</div>' + 
@@ -271,11 +275,18 @@ function chatCreate(hash, xid, nick, type) {
 	inputDetect.keypress(function(e) {
 		// Enter key
 		if(e.keyCode == 13) {
-			// Send the message
-			sendMessage(hash, 'chat');
+			// Add a new line
+			if(e.shiftKey)
+				inputDetect.val(inputDetect.val() + '\n');
 			
-			// Reset the composing database entry
-			setDB('chatstate', xid, 'off');
+			// Send the message
+			else {
+				// Send the message
+				sendMessage(hash, 'chat');
+				
+				// Reset the composing database entry
+				setDB('chatstate', xid, 'off');
+			}
 			
 			return false;
 		}

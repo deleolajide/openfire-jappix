@@ -9,7 +9,7 @@ This is the Jappix Manager PHP/HTML code
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 08/05/11
+Last revision: 26/08/11
 
 */
 
@@ -196,9 +196,9 @@ $page_name = $names[$id];
 
 // Define the current page form action
 if($id == 0)
-	$form_action = keepGet('(m|a|p)', false);
+	$form_action = keepGet('(m|a|p|k)', false);
 else
-	$form_action = keepGet('(m|p)', false);
+	$form_action = keepGet('(m|p|k)', false);
 
 ?>
 <!DOCTYPE html>
@@ -224,13 +224,13 @@ else
 				<?php if($id != 0) {
 				
 					// Keep get
-					$keep_get = keepGet('(a|p|b|s)', false);
+					$keep_get = keepGet('(a|p|b|s|k)', false);
 				
 				?>
 					<a class="logout manager-images" href="./?a=logout<?php echo $keep_get; ?>"><?php _e("Disconnect"); ?></a>
 				<?php } ?>
 				
-				<a class="close manager-images" href="./<?php echo keepGet('(m|a|p|b|s)', true); ?>"><?php _e("Close"); ?></a>
+				<a class="close manager-images" href="./<?php echo keepGet('(m|a|p|b|s|k)', true); ?>"><?php _e("Close"); ?></a>
 			</div>
 			
 			<div class="clear"></div>
@@ -423,6 +423,7 @@ else
 					<li class="total"><a href="./?p=everything<?php echo $keep_get; ?>"><?php _e("Clean everything"); ?></a></li>
 					<li><a href="./?p=cache<?php echo $keep_get; ?>"><?php _e("Purge cache"); ?></a></li>
 					<li><a href="./?p=logs<?php echo $keep_get; ?>"><?php _e("Purge logs"); ?></a></li>
+					<li><a href="./?p=send<?php echo $keep_get; ?>"><?php _e("Purge sent files"); ?></a></li>
 					<li><a href="./?p=updates<?php echo $keep_get; ?>"><?php _e("Purge updates"); ?></a></li>
 				</ul>
 				
@@ -500,6 +501,24 @@ else
 						$backgrounds_folder = urldecode($_GET['s']);
 				
 				?>
+				
+				<h4><?php _e("Logo"); ?></h4>
+				
+				<p><?php _e("You can set your own service logo to replace the default one. Take care of the size and the main color of each logo!"); ?></p>
+				
+				<div class="sub">
+					<p><?php _e("Upload each logo with the recommended maximum pixel size."); ?></p>
+					<p><?php _e("Your logo format must be PNG. Leave a field empty and the logo will not be changed."); ?></p>					
+					
+					<label for="logo_own_1_location">Jappix Desktop, <em>311×113</em></label><?php logoFormField('1', 'desktop_home'); ?>
+					<label for="logo_own_2_location">Jappix Desktop, <em>90×25</em></label><?php logoFormField('2', 'desktop_app'); ?>
+					<label for="logo_own_3_location">Jappix Mobile, <em>83×30</em></label><?php logoFormField('3', 'mobile'); ?>
+					<label for="logo_own_4_location">Jappix Mini, <em>81×22</em></label><?php logoFormField('4', 'mini'); ?>
+					
+					<label for="logo_own_upload"><?php _e("Upload"); ?></label><input id="logo_own_upload" type="submit" name="logo_upload" value="<?php _e("Upload"); ?>" />
+					
+					<div class="clear"></div>
+				</div>
 				
 				<h4><?php _e("Background"); ?></h4>
 				
@@ -579,8 +598,8 @@ else
 					
 					<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo(uploadMaxSize().''); ?>">
 					
-					<label for="background_image_upload"><?php _e("File"); ?></label><input id="background_image_upload" type="file" name="background_image_upload" accept="image/*" />
-					<label for="background_image_upload"><?php _e("Upload"); ?></label><input id="background_image_upload" type="submit" name="upload" value="<?php _e("Upload"); ?>" />
+					<label for="background_image_location"><?php _e("File"); ?></label><input id="background_image_location" type="file" name="background_image_upload" accept="image/*" />
+					<label for="background_image_upload"><?php _e("Upload"); ?></label><input id="background_image_upload" type="submit" name="background_upload" value="<?php _e("Upload"); ?>" />
 					
 					<div class="clear"></div>
 				</div>

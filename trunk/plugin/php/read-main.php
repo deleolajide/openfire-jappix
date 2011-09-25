@@ -1,5 +1,6 @@
 <?php
 
+
 /*
 
 Jappix - An open social platform
@@ -26,6 +27,7 @@ define('ANONYMOUS', 'off');
 define('REGISTRATION', 'off');
 define('BOSH_PROXY', 'off');
 define('MANAGER_LINK', 'off');
+define('GROUPCHATS_JOIN', '');
 define('ENCRYPTION', 'off');
 define('HTTPS_STORAGE', 'off');
 define('HTTPS_FORCE', 'off');

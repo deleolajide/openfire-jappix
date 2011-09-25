@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <jappix xmlns="jappix:conf:hosts">
-	<main>btg199251</main>
-	<muc>muc.btg199251</muc>
-	<pubsub>pubsub.btg199251</pubsub>
-	<vjud>vjud.btg199251</vjud>
-	<anonymous>anonymous.btg199251</anonymous>
-	<bosh>http://btg199251:7070/http-bind</bosh>
+	<main>localhost</main>
+	<muc>conference.localhost</muc>
+	<pubsub>pubsub.localhost</pubsub>
+	<vjud>vjud.localhost</vjud>
+	<anonymous>localhost</anonymous>
+	<bosh>http://localhost:7070/http-bind/</bosh>
 	<bosh_main></bosh_main>
 	<bosh_mini></bosh_mini>
 	<static></static>

@@ -9,13 +9,17 @@ These are the design configuration variables
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 28/12/10
+Last revision: 25/08/11
 
 */
 
 // Someone is trying to hack us?
 if(!defined('JAPPIX_BASE'))
 	exit;
+
+// Define initial logo form values
+$logo_default = ' checked=""';
+$logo_own = '';
 
 // Define initial background form values
 $background_default = ' checked=""';

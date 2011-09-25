@@ -8,8 +8,8 @@ This script (re)generates the store sub-folders (after an update)
 -------------------------------------------------
 
 License: AGPL
-Authors: Valérian Saliou
-Last revision: 12/03/11
+Author: Valérian Saliou
+Last revision: 26/08/11
 
 */
 
@@ -24,8 +24,10 @@ $store_folders = array(
 	'backgrounds',
 	'cache',
 	'conf',
+	'logos',
 	'logs',
 	'music',
+	'send',
 	'share',
 	'updates'
 );

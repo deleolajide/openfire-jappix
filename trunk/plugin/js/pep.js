@@ -7,7 +7,7 @@ These are the PEP JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 13/05/11
+Last revision: 26/08/11
 
 */
 
@@ -173,7 +173,7 @@ function displayPEP(xid, type) {
 				
 				// Generate the text to be displayed
 				if(tLat && tLon) {
-					aLink = ' href="http://www.openstreetmap.org/?mlat=' + encodeQuotes(tLat) + '&amp;mlon=' + encodeQuotes(tLon) + '&amp;zoom=14" target="_blank"';
+					aLink = ' href="http://maps.google.com/?q=' + encodeQuotes(tLat) + ',' + encodeQuotes(tLon) + '" target="_blank"';
 					fText = '<a' + aLink + '>' + tHuman.htmlEnc() + '</a>';
 					
 					if(tReal)
@@ -264,7 +264,7 @@ function displayPEP(xid, type) {
 					}
 					
 					else {
-						href = 'http://www.openstreetmap.org/?mlat=' + tLat + '&amp;mlon=' + tLon + '&amp;zoom=14';
+						href = 'http://maps.google.com/?q=' + encodeQuotes(tLat) + ',' + encodeQuotes(tLon);
 						title = _e("Where are you?") + ' (' + dText + ')';
 						icon_class = 'location-world';
 					}
@@ -551,7 +551,7 @@ function parsePosition(data) {
 	             result.find('address_component:has(type:contains("route")):first long_name').text(),
 	             result.find('address_component:has(type:contains("street_number")):first long_name').text(),
 	             result.find('formatted_address:first').text(),
-	             'http://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '&zoom=14'
+	             'http://maps.google.com/?q=' + encodeQuotes(lat) + ',' + encodeQuotes(lng)
 	            ];
 	
 	return array;
@@ -625,21 +625,23 @@ function getPosition(position) {
 
 // Geolocates the user
 function geolocate() {
-	// We wait a bit...
-	$('#my-infos').stopTime().oneTime('4s', function() {
-		// We publish the user location if allowed (maximum cache age of 1 hour)
-		if((getDB('options', 'geolocation') == '1') && enabledPEP() && navigator.geolocation) {
+	// Don't fire it until options & features are not retrieved!
+	if(!getDB('options', 'geolocation') || (getDB('options', 'geolocation') == '0') || !enabledPEP())
+		return;
+	
+	// We publish the user location if allowed
+	if(navigator.geolocation) {
+		// Wait a bit... (to fix a bug)
+		$('#my-infos').stopTime().oneTime('1s', function() {
 			navigator.geolocation.getCurrentPosition(getPosition);
-			
-			logThis('Geolocating...', 3);
-		}
+		});
 		
-		else if(!navigator.geolocation)
-			logThis('Not geolocated: browser does not support it.', 1);
-		
-		else
-			logThis('Not geolocated.', 2);
-	});
+		logThis('Geolocating...', 3);
+	}
+	
+	// Any error?
+	else
+		logThis('Not geolocated: browser does not support it.', 1);
 }
 
 // Displays all the supported PEP events for a given XID

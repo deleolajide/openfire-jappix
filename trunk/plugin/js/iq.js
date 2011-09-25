@@ -7,7 +7,7 @@ These are the IQ JS scripts for Jappix
 
 License: AGPL
 Author: Valérian Saliou
-Last revision: 21/03/11
+Last revision: 27/08/11
 
 */
 
@@ -28,8 +28,43 @@ function handleIQ(iq) {
 	iqResponse.setTo(iqFrom);
 	iqResponse.setType('result');
 	
+	// OOB request
+	if((iqQueryXMLNS == NS_IQOOB) && (iqType == 'set')) {
+		/* REF: http://xmpp.org/extensions/xep-0066.html */
+		
+		handleOOB(iqFrom, iqID, 'iq', iqNode);
+		
+		logThis('Received IQ OOB request: ' + iqFrom);
+	}
+	
+	// OOB reply
+	else if(getDB('send/url', iqID)) {
+		// Get the values
+		var oob_url = getDB('send/url', iqID);
+		var oob_desc = getDB('send/desc', iqID);
+		var notif_id = hex_md5(oob_url + oob_desc + iqType + iqFrom + iqID);
+		
+		// Error?
+		if($(iqNode).find('error').size()) {
+			// Rejected?
+			if($(iqNode).find('error not-acceptable').size())
+				newNotification('send_reject', iqFrom, [iqFrom, oob_url, 'iq', iqID, iqNode], oob_desc, notif_id);
+			
+			// Failed?
+			else
+				newNotification('send_fail', iqFrom, [iqFrom, oob_url, 'iq', iqID, iqNode], oob_desc, notif_id);
+			
+			// Remove the file
+			$.get(oob_url + '&action=remove');
+		}
+		
+		// Success?
+		else if(iqType == 'result')
+			newNotification('send_accept', iqFrom, [iqFrom, oob_url, 'iq', iqID, iqNode], oob_desc, notif_id);
+	}
+	
 	// Software version query
-	if((iqQueryXMLNS == NS_VERSION) && (iqType == 'get')) {
+	else if((iqQueryXMLNS == NS_VERSION) && (iqType == 'get')) {
 		/* REF: http://xmpp.org/extensions/xep-0092.html */
 		
 		var iqQuery = iqResponse.setQuery(NS_VERSION);

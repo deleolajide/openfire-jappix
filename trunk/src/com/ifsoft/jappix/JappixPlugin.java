@@ -9,12 +9,12 @@ import java.util.*;
 import java.io.File;
 
 // uncomment for openfire 3.6.4
-import org.mortbay.jetty.handler.ContextHandlerCollection;
-import org.mortbay.jetty.webapp.WebAppContext;
+//import org.mortbay.jetty.handler.ContextHandlerCollection;
+//import org.mortbay.jetty.webapp.WebAppContext;
 
 // uncomment for openfire 3.7.0
-//import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-//import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 
 public class JappixPlugin implements Plugin, JappixConstants {
