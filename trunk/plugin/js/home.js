@@ -6,8 +6,8 @@ These are the homepage JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Authors: Valérian Saliou, Emmanuel Gil Peyrot
-Last revision: 23/06/11
+Authors: Vanaryon, LinkMauve
+Last revision: 15/01/12
 
 */
 
@@ -293,6 +293,7 @@ function launchHome() {
 	// Define the vars
 	var home = '#home ';
 	var button = home + 'button';
+	var corp = home + '.corporation';
 	var locale = home + '.locale';
 	
 	// Removes the <noscript /> elements to lighten the DOM
@@ -307,6 +308,13 @@ function launchHome() {
 		// Register button
 		else
 			return switchHome('registerer');
+	});
+	
+	// Allows the user to view the corporation infobox
+	$(corp).hover(function() {
+		$(corp).addClass('hovered');
+	}, function() {
+		$(corp).removeClass('hovered');
 	});
 	
 	// Allows the user to switch the language

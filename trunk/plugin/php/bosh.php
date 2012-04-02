@@ -3,13 +3,13 @@
 /*
 
 Jappix - An open social platform
-This is a PHP BOSH proxy
+This is the PHP BOSH proxy
 
 -------------------------------------------------
 
-License: MIT
-Authors: Jonathan Gueron, Valérian Saliou
-Last revision: 25/05/11
+License: AGPL
+Author: Vanaryon
+Last revision: 15/01/12
 
 */
 
@@ -68,7 +68,7 @@ else {
 }
 
 // HTTP headers
-$headers = array('User-Agent: Jappix (BOSH PHP Proxy)', 'Connection: keep-alive', 'Content-Type: text/xml; charset=utf-8', 'Content-Length: '.strlen($data));
+$headers = array('User-Agent: Jappix (BOSH PHP Proxy)', 'Connection: close', 'Content-Type: text/xml; charset=utf-8', 'Content-Length: '.strlen($data));
 
 // CURL is better if available
 if(function_exists('curl_init'))

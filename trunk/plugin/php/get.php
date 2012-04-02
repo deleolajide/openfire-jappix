@@ -8,8 +8,8 @@ This is the file get script
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 25/08/11
+Author: Vanaryon
+Last revision: 03/12/11
 
 */
 
@@ -322,11 +322,8 @@ if($file && $type) {
 		}
 		
 		// Read the binary file (PNG, OGA and others)
-		else {
-			ob_clean();
-			flush();
+		else
 			readfile($path);
-		}
 		
 		exit;
 	}

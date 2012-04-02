@@ -8,8 +8,8 @@ This is the Jappix music search script
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 27/05/11
+Author: Vanaryon
+Last revision: 15/01/12
 
 */
 
@@ -40,7 +40,7 @@ if((isset($_GET['searchquery']) && !empty($_GET['searchquery'])) && (isset($_GET
 	
 	// Jamendo search?
 	if($location == 'jamendo')
-		exit(file_get_contents('http://api.jamendo.com/get2/name+id+duration+url/track/xml/?searchquery='.urlencode($searchquery).'&order=searchweight_desc'));
+		exit(read_url('http://api.jamendo.com/get2/name+id+duration+url/track/xml/?searchquery='.urlencode($searchquery).'&order=searchweight_desc'));
 	
 	// Local music search
 	$xml = '<data>';

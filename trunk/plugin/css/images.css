@@ -6,8 +6,8 @@ This is the images CSS stylesheet for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 13/05/11
+Author: Vanaryon
+Last revision: 16/01/12
 
 */
 
@@ -49,6 +49,11 @@ Last revision: 13/05/11
 
 .welcome-images {
 	background-image: url(../img/sprites/welcome.png);
+	background-repeat: no-repeat;
+}
+
+.me-images {
+	background-image: url(../img/sprites/me.png);
 	background-repeat: no-repeat;
 }
 

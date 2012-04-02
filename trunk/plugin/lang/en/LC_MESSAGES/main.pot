@@ -4,13 +4,34 @@
 # -------------------------------------------------
 
 # License: AGPL
-# Authors: Vanaryon, Jan-Christoph Borchardt
-# Last revision: 28/08/11
+# Authors: Vanaryon, JanCBorchardt
+# Last revision: 16/01/12
 
 msgid "JavaScript is missing in your web browser, so that you will not be able to launch Jappix! Please fix this."
 msgstr ""
 
 msgid "An open social network"
+msgstr ""
+
+msgid "Social channel, chat and more."
+msgstr ""
+
+msgid "Create your public profile."
+msgstr ""
+
+msgid "A mini-chat for your website."
+msgstr ""
+
+msgid "Get Jappix, get support."
+msgstr ""
+
+msgid "Statistics around Jappix."
+msgstr ""
+
+msgid "Download Jappix for free."
+msgstr ""
+
+msgid "Find a public Jappix node."
 msgstr ""
 
 msgid "Jappix has been interrupted by a network issue, a bug or bad login (check that you entered the right credentials), sorry for the inconvenience."
@@ -1811,4 +1832,25 @@ msgid "%s bans an user of the room"
 msgstr ""
 
 msgid "%s invites someone to join the room"
+msgstr ""
+
+msgid "Public profile"
+msgstr ""
+
+msgid "Your profile anywhere on the Web."
+msgstr ""
+
+msgid "%s is a Jappix.com service which makes your XMPP profile public. It is easier to share it. No XMPP account is required to view your social channel, your current position and your contact details."
+msgstr ""
+
+msgid "Furthermore, every picture you post in your social channel is added to a beautiful picture timeline. You can now view the pictures you shared year by year."
+msgstr ""
+
+msgid "You can also use your XMPP avatar as a single avatar for every website, blog and forum you use. When you change it on XMPP, the new avatar appears everywhere. What a genious improvement!"
+msgstr ""
+
+msgid "Yay, let's create my public profile!"
+msgstr ""
+
+msgid "Enable my public profile"
 msgstr ""

@@ -8,8 +8,8 @@ This is the Jappix microblog file attaching script
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 27/05/11
+Author: Vanaryon
+Last revision: 14/01/12
 
 */
 
@@ -47,15 +47,6 @@ if((isset($_FILES['file']) && !empty($_FILES['file'])) && (isset($_POST['user'])
 	else
 		$location = $_POST['location'];
 	
-	// Forbidden file?
-	if(!isSafe($filename)) {
-		exit(
-'<jappix xmlns=\'jappix:file:post\'>
-	<error>forbidden-type</error>
-</jappix>'
-		);
-	}
-	
 	// Get the file new name
 	$ext = getFileExt($filename);
 	$new_name = preg_replace('/(^)(.+)(\.)(.+)($)/i', '$2', $filename);
@@ -66,6 +57,15 @@ if((isset($_FILES['file']) && !empty($_FILES['file'])) && (isset($_POST['user'])
 	$name = sha1(time().$filename);
 	$path = $content_dir.'/'.$name.'.'.$ext;
 	$thumb_xml = '';
+	
+	// Forbidden file?
+	if(!isSafe($filename) || !isSafe($name.'.'.$ext)) {
+		exit(
+'<jappix xmlns=\'jappix:file:post\'>
+	<error>forbidden-type</error>
+</jappix>'
+		);
+	}
 	
 	// Create the user directory
 	if(!is_dir($content_dir)) {

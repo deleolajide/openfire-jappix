@@ -6,8 +6,8 @@ This is the vCard CSS stylesheet for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 12/03/11
+Author: Vanaryon
+Last revision: 16/01/12
 
 */
 
@@ -91,6 +91,10 @@ Last revision: 12/03/11
 	margin: 15px 15px 15px 0;
 	padding: 0 8px;
 	float: right;
+}
+
+#vcard .infos a {
+	text-decoration: underline;
 }
 
 #vcard .send {

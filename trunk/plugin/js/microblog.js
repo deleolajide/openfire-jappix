@@ -6,8 +6,8 @@ These are the microblog JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Valérian Saliou
-Last revision: 27/08/11
+Author: Vanaryon
+Last revision: 03/12/11
 
 */
 
@@ -128,7 +128,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		// Get the stamp & time
 		if(tDate) {
 			tStamp = extractStamp(Date.jab2date(tDate));
-			tTime = parseDate(tDate);
+			tTime = relativeDate(tDate);
 		}
 		
 		else {
@@ -193,7 +193,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 			
 			// Is it a repeat?
 			if(uRepeated)
-				html += '<a href="#" class="repeat talk-images" title="' + encodeQuotes(printf(_e("This is a repeat from %s"), uRepeat[0] + ' (' + uRepeat[1] + ')')) + '" onclick="return checkChatCreate(\'' + encodeOnclick(uRepeat[1]) + '\', \'chat\');"></a>';
+				html += '<a href="#" class="repeat talk-images" title="' + encodeQuotes(printf(_e("This is a repeat from %s"), uRepeat[0] + ' (' + uRepeat[1] + ')')) + '" onclick="return checkChatCreate(\'' + encodeOnclick(uRepeat[1]) + '\', \'chat\');" data-xid="' + encodeQuotes(uRepeat[1]) + '"></a>';
 			
 			html += '<b title="' + from + '" class="name">' + tName.htmlEnc() + '</b> <span>' + tFiltered + '</span></p>' + 
 				'<p class="infos">' + tTime + tGeoloc + '</p>';
@@ -462,6 +462,7 @@ function handleCommentsMicroblog(iq) {
 	
 	// Get the owner XID
 	var owner_xid = parent_select.attr('data-xid');
+	var repeat_xid = parent_select.find('a.repeat').attr('data-xid');
 	
 	// Must we create the complete DOM?
 	var complete = true;
@@ -589,6 +590,10 @@ function handleCommentsMicroblog(iq) {
 	// Add the owner XID
 	if(owner_xid && owner_xid.match('@') && !existArrayValue(users_xid, owner_xid))
 		users_xid.push(owner_xid);
+	
+	// Add the repeated from XID
+	if(repeat_xid && repeat_xid.match('@') && !existArrayValue(users_xid, repeat_xid))
+		users_xid.push(repeat_xid);
 	
 	// Remove my own XID
 	removeArrayValue(users_xid, getXID());
@@ -1192,6 +1197,12 @@ function publishMicroblog(body, attachedname, attachedurl, attachedtype, attache
 		comments_entity_file = [];
 	if(!comments_node_file)
 		comments_node_file = [];
+	
+	// Don't create another comments node if only 1 file is attached
+	if(attachedurl && (attachedurl.length == 1) && (!comments_entity_file[0] || !comments_node_file[0])) {
+		comments_entity_file = [comments_entity];
+		comments_node_file = [comments_node];
+	}
 	
 	// New IQ
 	var iq = new JSJaCIQ();
