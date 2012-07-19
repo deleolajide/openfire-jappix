@@ -51,16 +51,12 @@ function connectMini(domain, user, password) {
 		else
 			oArgs.httpbase = HOST_BOSH;
 		
-	        if (!window.WebSocket && !window.MozWebSocket) 
-	        {
-			// We create the new http-binding connection
-			con = new JSJaCHttpBindingConnection(oArgs);
-	        
-	        } else {
-   
-			// We create the new openfire websockets connection
-			con = new JSJaCOpenfireWSConnection(oArgs);
-		}
+		// We create the new http-binding connection
+		con = new JSJaCHttpBindingConnection(oArgs);
+
+		// We create the new openfire websockets connection
+		//con = new JSJaCOpenfireWSConnection(oArgs);
+
 		
 		// And we handle everything that happen
 		setupConMini(con);
