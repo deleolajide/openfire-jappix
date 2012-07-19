@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin>
+    <class>com.ifsoft.jappix.JappixPlugin</class>
+    <name>Jappix Web Client</name>
+    <description>Jappix Plugin for Openfire</description>
+    <author>Dele Olajide</author>
+    <version>0.0.0.4</version>
+    <minServerVersion>3.7.0</minServerVersion> 
+    
+</plugin>

@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="stylesheet" type="text/css" href="css/mini.css" />
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="php/get.php?l=en&t=js&g=mini.xml"></script>
+<script type="text/javascript">
+
+	function loaded()
+	{
+		// resize main body frrame
+
+		var myWidth;
+		var myHeight;
+
+		if ( typeof( window.innerWidth ) == 'number' )
+		{
+			myWidth = window.innerWidth;
+			myHeight = window.innerHeight;
+
+		} else if ( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+
+			myWidth = document.documentElement.clientWidth;
+			myHeight = document.documentElement.clientHeight;
+
+		} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+
+			myWidth = document.body.clientWidth;
+			myHeight = document.body.clientHeight;
+		}
+
+		jQuery('#mainbody').css('height', myHeight + 'px');
+		jQuery('#mainbody').css('width',  myWidth +  'px');
+
+		// load Jappix Mini
+
+		MINI_GROUPCHATS = [];
+		MINI_PASSWORDS = [];
+		MINI_CHATS = [];
+
+		// Add an animation
+		MINI_ANIMATE = true;
+		MINI_NICKNAME = "administrator";
+		MINI_RESOURCE = "minichat";
+
+		var username = getPageParameter('username', "admin@btg199251");
+		var password = getPageParameter('password', "changeme");
+
+        launchMini(false, false, window.location.hostname, username, password);
+	}
+
+	function unloaded()
+	{
+		disconnectMini();
+	}
+
+	function getParameter(string, parm, delim)
+	{
+		 if (string.length == 0)
+		 {
+			return '';
+		 }
+
+		 var sPos = string.indexOf(parm + "=");
+
+		 if (sPos == -1) {return '';}
+
+		 sPos = sPos + parm.length + 1;
+
+		 var ePos = string.indexOf(delim, sPos);
+
+		 if (ePos == -1) {
+			ePos = string.length;
+		 }
+
+		 return unescape(string.substring(sPos, ePos));
+	}
+
+	function getPageParameter(parameterName, defaultValue) {
+
+		var s = self.location.search;
+
+		if ((s == null) || (s.length < 1)) {
+			return defaultValue;
+		}
+
+		s = getParameter(s, parameterName, '&');
+
+		if ((s == null) || (s.length < 1)) {
+			s = defaultValue;
+		}
+
+		return s;
+	}
+</script>
+</head>
+<body topmargin="0" leftmargin="0" onload="loaded()" onunload="unloaded()" style="border-width:0px; overflow: hidden;margin-left: 0px; margin-top: 0px; margin-right: 0px; margin-bottom: 0px">
+<iframe id="mainbody" frameborder="0" src="http://www.igniterealtime.org" style="border:0px;width:100%;height:100%;"></iframe>
+</body>
+</html>
