@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<jappix xmlns="jappix:conf:users">
-	<user name="com.caucho.quercus.lib.simplexml.SimpleXMLAttribute@1f1f38e" password="com.caucho.quercus.lib.simplexml.SimpleXMLAttribute@1115152" />
-	<user name="admin" password="fcb8badaadcbb80e728c948e7be3e87c2a7f9b0fff934a60deb9c16847bd231a" />
-</jappix>
