@@ -6,14 +6,11 @@ These are the chat JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Authors: Vanaryon, Eric
-Last revision: 13/02/12
+Authors: Valérian Saliou, Eric, Maranda
+Last revision: 20/02/13
 
 */
 
-var remoteAudio = null;
-var webrtc = null;
-	
 // Correctly opens a new chat
 function checkChatCreate(xid, type, nickname, password, title) {
 	// No XID?
@@ -112,8 +109,6 @@ function generateChat(type, id, xid, nick) {
 		specialDisabled = '';
 	}
 	
-	specialLink += '<a href="#" class="tools-voicechat voicechat-images tools-tooltip talk-images chat-tools-content" title="' + _e("Voice Chat") + '"></a>'
-	
 	// Not a groupchat private chat, we can use the buddy add icon
 	if((type == 'chat') || (type == 'groupchat')) {
 		var addTitle;
@@ -185,67 +180,6 @@ function generateChat(type, id, xid, nick) {
 	$(path + 'tools-infos').click(function() {
 		openUserInfos(xid);
 	});
-	
-	// Jingle Make call BAO
-
-	if (window.webkitPeerConnection00) 
-	{
-		createWebRtc();	// create webrtc on first time		
-	}
-
-	$('#' + id + ' .tools-voicechat').click(function() {
-
-		if (window.webkitPeerConnection00) 
-		{
-			var me = con.username + "@" + con.domain + "/" + con.resource;
-			var you = _fullJingleJis[id];	
-
-			console.log("jappix - start/stop call " + you);
-
-			if (webrtc.localStream != null)
-			{				
-				if (remoteAudio == null)
-				{
-					remoteAudio = document.getElementById("remoteAudio");
-					webrtc.you = getXIDNick(you);
-
-					if (type == 'chat') 
-					{
-						var body = "Voice chat request has been sent to you";
-						con._sendRaw('<message to="' + you + '" type="chat" xml:lang="en"><body>' + body + '</body></message>');
-
-						setTimeout('webrtc.jingleInitiate("' + you + '", true)', 3000);
-
-					} else {
-						webrtc.jingleInitiate(getXIDNick(you) + "@openlink." + con.domain, false);
-					}
-
-					var text = _e("The voice chat is initiating");
-
-				} else {
-
-					if (webrtc.you != getXIDNick(you))
-					{
-						var text = _e("Another voice chat is active. Please terminate");
-					
-					} else {
-
-						var text = _e("The voice chat is ending");					
-						
-						if (remoteAudio != null) remoteAudio.src = null;
-						remoteAudio = null;						
-
-						webrtc.jingleTerminate();
-					}
-				}
-
-				$('#' + id + ' .chatstate').remove();
-				$('#' + id + ' .content').after('<div class="active chatstate">' + text + '</div>');	
-
-			}
-		}
-
-	}).show();			
 }
 
 // Generates the chat switch elements
@@ -288,7 +222,7 @@ function cleanChat(chat) {
 	$('#page-engine #' + chat + ' .content .one-group').remove();
 	
 	// Clear the history database
-	removePersistent('history', chat);
+	removePersistent(getXID(), 'history', chat);
 	
 	// Focus again
 	$(document).oneTime(10, function() {
@@ -309,7 +243,7 @@ function chatCreate(hash, xid, nick, type) {
 	// If the user is not in our buddy-list
 	if(type == 'chat') {
 		// Restore the chat history
-		var chat_history = getPersistent('history', hash);
+		var chat_history = getPersistent(getXID(), 'history', hash);
 		
 		if(chat_history) {
 			// Generate hashs
@@ -320,7 +254,7 @@ function chatCreate(hash, xid, nick, type) {
 			$('#' + hash + ' .content').append(chat_history);
 			
 			// Filter old groups & messages
-			$('#' + hash + ' .one-group[data-type=user-message]').addClass('from-history').attr('data-type', 'old-message');
+			$('#' + hash + ' .one-group[data-type="user-message"]').addClass('from-history').attr('data-type', 'old-message');
 			$('#' + hash + ' .user-message').removeClass('user-message').addClass('old-message');
 			
 			// Regenerate user names
@@ -331,7 +265,7 @@ function chatCreate(hash, xid, nick, type) {
 			$('#' + hash + ' .one-group').each(function() {
 				var current_stamp = parseInt($(this).attr('data-stamp'));
 				$(this).find('span.date').text(relativeDate(current_stamp));
-			});		
+			});
 			
 			// Regenerate avatars
 			if(exists('#' + hash + ' .one-group.' + my_hash + ' .avatar-container'))
@@ -341,7 +275,7 @@ function chatCreate(hash, xid, nick, type) {
 		}
 		
 		// Add button
-		if(!exists('#buddy-list .buddy[data-xid=' + escape(xid) + ']'))
+		if(!exists('#buddy-list .buddy[data-xid="' + escape(xid) + '"]'))
 			$('#' + hash + ' .tools-add').click(function() {
 				// Hide the icon (to tell the user all is okay)
 				$(this).hide();
@@ -360,8 +294,6 @@ function chatCreate(hash, xid, nick, type) {
 				$('#archives .filter .friend').val(xid);
 				updateArchives();
 			}).show();
-		
-	
 	}
 	
 	// We catch the user's informations (like this avatar, vcard, and so on...)
@@ -374,8 +306,18 @@ function chatCreate(hash, xid, nick, type) {
 	var inputDetect = $('#page-engine #' + hash + ' .message-area');
 	
 	inputDetect.focus(function() {
+		// Clean notifications for this chat
 		chanCleanNotify(hash);
-	})
+		
+		// Store focus on this chat!
+		CHAT_FOCUS_HASH = hash;
+	});
+	
+	inputDetect.blur(function() {
+		// Reset storage about focus on this chat!
+		if(CHAT_FOCUS_HASH == hash)
+			CHAT_FOCUS_HASH = null;
+	});
 	
 	inputDetect.keypress(function(e) {
 		// Enter key
@@ -399,105 +341,4 @@ function chatCreate(hash, xid, nick, type) {
 	
 	// Chatstate events
 	eventsChatState(inputDetect, xid, hash);
-}
-
-// Jingle Handle calls BAO
-
-var _fullJingleJis = {};
-
-function handleJingleCallback(stanza) 
-{
-	var from = $(stanza).attr('from');
-	var xid = bareXID(from);
-	
-	if (from.indexOf("openlink.") > -1)
-		var hash = hex_md5(getXIDNick(from) + "@conference." + con.domain);
-	else
-		var hash = hex_md5(xid);
-
-	console.log("jappix - jingleCallback " + from + " " + xid + " " + hash);
-	console.log(stanza);
-			
-	$(stanza).find('jingle').each(function() 
-	{			
-		webrtc.onMessage(this);
-		
-		var text = "VoiceChat: ";
-
-		if (this.getAttribute("action") == "session-terminate")
-		{
-			console.log("jappix - jingleCallback - session-terminate");		
-			
-			if (remoteAudio != null) remoteAudio.src = null;
-			remoteAudio = null;
-			
-			var text = _e("The voice chat has ended");
-		}
-
-		if (this.getAttribute("action") == "session-accept")
-		{
-			var text = _e("The voice chat has been accepted");
-		}
-		
-		if (this.getAttribute("action") == "session-initiate")
-		{
-			console.log("jappix - jingleCallback - session-initiate");
-			
-			var text = _e("Accept voice chat?");
-			
-			text += '&nbsp;<a href="#" onclick="return webrtc.acceptCall(\'' + from + '\');">' + _e("Yes") + '</a>&nbsp;|';
-			text += '&nbsp;<a href="#" onclick="return;">' + _e("No") + '</a>';									
-		}		
-			
-		$('#' + hash + ' .chatstate').remove();
-		$('#' + hash + ' .content').after('<div class="active chatstate">' + text + '</div>');			
-		
-	});
-
-	return true;
-}
-
-function createWebRtc()
-{
-	var me = con.username + "@" + con.domain + "/" + con.resource;
-
-	if (webrtc == null)
-	{
-		console.log('createWebRtc ' + me);
-
-		jQuery('body').append('<video style="display:none" id="remoteAudio" autoplay="autoplay"></video>');				
-
-		webrtc = new WebRtcJingle();		
-		webrtc.startApp({
-
-			sendPacket: function (packet) 
-			{
-				console.log("jappix - sendPacket " + packet);
-				con._sendRaw(packet);
-			},
-
-			startRemoteMedia: function (url, from) 
-			{
-				console.log("jappix - startRemoteMedia " + url + " " + from);	
-				remoteAudio = document.getElementById("remoteAudio");
-				remoteAudio.src = url;
-
-				if (from.indexOf("openlink.") > -1)
-					var hash = hex_md5(getXIDNick(from) + "@conference." + con.domain);
-				else
-					var hash = hex_md5(bareXID(from));
-		
-				var text = _e("The voice chat has started");
-
-				$('#' + hash + ' .chatstate').remove();
-				$('#' + hash + ' .content').after('<div class="active chatstate">' + text + '</div>');	
-			},
-
-			startLocalMedia: function  (url) 
-			{
-				console.log("jappix - startLocalMedia " + url);				
-			}					
-
-		}, "", me);
-	}
 }

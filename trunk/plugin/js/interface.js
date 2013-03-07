@@ -6,8 +6,8 @@ These are the interface JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 26/08/11
+Author: Valérian Saliou
+Last revision: 23/01/13
 
 */
 
@@ -22,7 +22,7 @@ function pageTitle(title) {
 	// We change the title to give essential informations
 	switch(title) {
 		case 'home':
-			document.title = SERVICE_NAME + ' • ' + _e("An open social network");
+			document.title = SERVICE_NAME + ' • ' + SERVICE_DESC;
 			
 			break;
 		
@@ -232,6 +232,8 @@ function generateChatLog(xid, hash) {
 }
 
 // Notifies the user from a new incoming message
+var CHAT_FOCUS_HASH = null;
+
 function messageNotify(hash, type) {
 	// Initialize the vars
 	var chat_switch = '#page-switch .';
@@ -239,9 +241,9 @@ function messageNotify(hash, type) {
 	var active = $(tested).hasClass('activechan');
 	
 	// We notify the user if he has not the focus on the chat
-	if(!active || !isFocused()) {
+	if(!active || !isFocused() || (CHAT_FOCUS_HASH != hash)) {
 		if(!active) {
-			if(type == 'personnal')
+			if(type == 'personal')
 				$(tested + ', ' + chat_switch + 'more-button').addClass('chan-newmessage');
 			else if(type == 'unread')
 				$(tested).addClass('chan-unread');

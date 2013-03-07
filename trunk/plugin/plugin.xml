@@ -5,7 +5,7 @@
     <name>Jappix Web Client</name>
     <description>Jappix Plugin for Openfire</description>
     <author>Dele Olajide</author>
-    <version>0.0.0.4</version>
+    <version>0.0.0.5</version>
     <minServerVersion>3.7.0</minServerVersion> 
     
 </plugin>

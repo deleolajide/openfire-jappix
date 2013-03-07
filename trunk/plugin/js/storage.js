@@ -6,7 +6,7 @@ These are the storage JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 26/08/11
 
 */
@@ -30,10 +30,10 @@ function handleStorage(iq) {
 	var handleFrom = fullXID(getStanzaFrom(iq));
 	
 	// Define some vars
-	var options = $(handleXML).find('storage[xmlns=' + NS_OPTIONS + ']');
-	var inbox = $(handleXML).find('storage[xmlns=' + NS_INBOX + ']');
-	var bookmarks = $(handleXML).find('storage[xmlns=' + NS_BOOKMARKS + ']');
-	var rosternotes = $(handleXML).find('storage[xmlns=' + NS_ROSTERNOTES + ']');
+	var options = $(handleXML).find('storage[xmlns="' + NS_OPTIONS + '"]');
+	var inbox = $(handleXML).find('storage[xmlns="' + NS_INBOX + '"]');
+	var bookmarks = $(handleXML).find('storage[xmlns="' + NS_BOOKMARKS + '"]');
+	var rosternotes = $(handleXML).find('storage[xmlns="' + NS_ROSTERNOTES + '"]');
 	
 	// No options and node not yet configured
 	if(options.size() && !options.find('option').size() && (iq.getType() != 'error'))

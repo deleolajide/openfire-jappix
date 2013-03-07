@@ -6,8 +6,8 @@ These are the microblog JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 12/02/12
+Authors: Valérian Saliou, Maranda
+Last revision: 20/02/13
 
 */
 
@@ -23,8 +23,8 @@ function attachedMicroblog(selector, tFName, tFURL, tFThumb, tFSource, tFType, t
 	else
 		tFURL.push('');
 	
-	if($(selector).find('link[rel=self][title=thumb]:first').attr('href'))
-		tFThumb.push($(selector).find('link[rel=self][title=thumb]:first').attr('href'));
+	if($(selector).find('link[rel="self"][title="thumb"]:first').attr('href'))
+		tFThumb.push($(selector).find('link[rel="self"][title="thumb"]:first').attr('href'));
 	else
 		tFThumb.push('');
 	
@@ -44,7 +44,7 @@ function attachedMicroblog(selector, tFName, tFURL, tFThumb, tFSource, tFType, t
 		tFLength.push('');
 	
 	// Comments?
-	var comments_href_c = $(selector).find('link[rel=replies][title=comments_file]:first').attr('href');
+	var comments_href_c = $(selector).find('link[rel="replies"][title="comments_file"]:first').attr('href');
 	
 	if(comments_href_c && comments_href_c.match(/^xmpp:(.+)\?;node=(.+)/)) {
 		tFEComments.push(RegExp.$1);
@@ -86,12 +86,12 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		tHash = 'update-' + hex_md5(tName + tDate + tID);
 		
 		// Read attached files with a thumb (place them at first)
-		$(this).find('link[rel=enclosure]:has(link[rel=self][title=thumb])').each(function() {
+		$(this).find('link[rel="enclosure"]:has(link[rel="self"][title="thumb"])').each(function() {
 			attachedMicroblog(this, tFName, tFURL, tFThumb, tFSource, tFType, tFLength, tFEComments, tFNComments);
 		});
 		
 		// Read attached files without any thumb
-		$(this).find('link[rel=enclosure]:not(:has(link[rel=self][title=thumb]))').each(function() {
+		$(this).find('link[rel="enclosure"]:not(:has(link[rel="self"][title="thumb"]))').each(function() {
 			attachedMicroblog(this, tFName, tFURL, tFThumb, tFSource, tFType, tFLength, tFEComments, tFNComments);
 		});
 		
@@ -112,7 +112,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		var entityComments, nodeComments;
 		
 		// Get the comments
-		var comments_href = $(this).find('link[title=comments]:first').attr('href');
+		var comments_href = $(this).find('link[title="comments"]:first').attr('href');
 		
 		if(comments_href && comments_href.match(/^xmpp:(.+)\?;node=(.+)/)) {
 			entityComments = RegExp.$1;
@@ -138,7 +138,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		
 		// Get the item geoloc
 		var tGeoloc = '';
-		var sGeoloc = $(this).find('geoloc[xmlns=' + NS_GEOLOC + ']:first');
+		var sGeoloc = $(this).find('geoloc[xmlns="' + NS_GEOLOC + '"]:first');
 		var gLat = sGeoloc.find('lat').text();
 		var gLon = sGeoloc.find('lon').text();
 		
@@ -161,7 +161,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 		}
 		
 		// Retrieve the message body
-		tTitle = $(this).find('content[type=text]').text();
+		tTitle = $(this).find('content[type="text"]').text();
 		
 		if(!tTitle) {
 			// Legacy?
@@ -255,7 +255,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 			
 			// It's my own notice, we can remove it!
 			if(from == getXID())
-				html += '<a href="#" onclick="return removeMicroblog(\'' + encodeOnclick(tID) + '\', \'' + encodeOnclick(tHash) + '\');" title="' + _e("Remove this notice") + '" class="mbtool remove talk-images"></a>';
+				html += '<a href="#" onclick="return removeMicroblog(\'' + encodeOnclick(tID) + '\', \'' + encodeOnclick(tHash) + '\', \'' + encodeOnclick(entityComments) + '\', \'' + encodeOnclick(nodeComments) + '\');" title="' + _e("Remove this notice") + '" class="mbtool remove talk-images"></a>';
 			
 			// Notice from another user
 			else {
@@ -282,7 +282,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 				if(nearest == 0)
 					$('#channel .content.mixed').append(html);
 				else
-					$('#channel .one-update[data-stamp=' + nearest + ']:first').before(html);
+					$('#channel .one-update[data-stamp="' + nearest + '"]:first').before(html);
 				
 				// Show the new item
 				if(way == 'push')
@@ -308,7 +308,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 			// Can append individual content?
 			var can_individual = true;
 			
-			if($('#channel .top.individual input[name=comments]').val() && exists(tIndividual + ' .one-update'))
+			if($('#channel .top.individual input[name="comments"]').val() && exists(tIndividual + ' .one-update'))
 				can_individual = false;
 			
 			if(can_individual && exists(tIndividual) && !exists('.individual .' + tHash)) {
@@ -334,7 +334,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 			}
 			
 			// Apply the click event
-			$('.' + tHash + ' a.repost:not([data-event=true])').click(function() {
+			$('.' + tHash + ' a.repost:not([data-event="true"])').click(function() {
 				return publishMicroblog(tTitle, tFName, tFURL, tFType, tFLength, tFThumb, uRepeat, entityComments, nodeComments, tFEComments, tFNComments);
 			})
 			
@@ -356,7 +356,7 @@ function displayMicroblog(packet, from, hash, mode, way) {
 }
 
 // Removes a given microblog item
-function removeMicroblog(id, hash) {
+function removeMicroblog(id, hash, pserver, cnode) {
 	/* REF: http://xmpp.org/extensions/xep-0060.html#publisher-delete */
 	
 	// Initialize
@@ -373,17 +373,26 @@ function removeMicroblog(id, hash) {
 	});
 	
 	// Send the IQ to remove the item (and get eventual error callback)
-	var iq = new JSJaCIQ();
-	iq.setType('set');
+	// Also attempt to remove the comments node.
+	var retract_iq = new JSJaCIQ();
+	retract_iq.setType('set');
+	retract_iq.appendNode('pubsub', {'xmlns': NS_PUBSUB}).appendChild(retract_iq.buildNode('retract', {'node': NS_URN_MBLOG, 'xmlns': NS_PUBSUB})).appendChild(retract_iq.buildNode('item', {'id': id, 'xmlns': NS_PUBSUB}));
 	
-	var pubsub = iq.appendNode('pubsub', {'xmlns': NS_PUBSUB});
-	var retract = pubsub.appendChild(iq.buildNode('retract', {'node': NS_URN_MBLOG, 'xmlns': NS_PUBSUB}));
-	retract.appendChild(iq.buildNode('item', {'id': id, 'xmlns': NS_PUBSUB}));
+	var comm_delete_iq;
+	if (pserver != '' && cnode != '') {
+		comm_delete_iq = new JSJaCIQ();
+		comm_delete_iq.setType('set');
+		comm_delete_iq.setTo(pserver);
+		comm_delete_iq.appendNode('pubsub', {'xmlns': 'http://jabber.org/protocol/pubsub#owner'}).appendChild(comm_delete_iq.buildNode('delete', {'node': cnode, 'xmlns': 'http://jabber.org/protocol/pubsub#owner'}));
+	}
 	
-	if(get_last)
-		con.send(iq, handleRemoveMicroblog);
-	else
-		con.send(iq, handleErrorReply);
+	if(get_last) {
+		if (comm_delete_iq) { con.send(comm_delete_iq); }
+		con.send(retract_iq, handleRemoveMicroblog);
+	} else {
+		if (comm_delete_iq) { con.send(comm_delete_iq); }
+		con.send(retract_iq, handleErrorReply);
+	}
 	
 	return false;
 }
@@ -432,7 +441,7 @@ function getCommentsMicroblog(server, node, id) {
 function handleCommentsMicroblog(iq) {
 	// Path
 	var id = explodeThis('-', iq.getID(), 1);
-	var path = 'div.comments[data-id=' + id + '] div.comments-content';
+	var path = 'div.comments[data-id="' + id + '"] div.comments-content';
 	
 	// Does not exist?
 	if(!exists(path))
@@ -457,7 +466,7 @@ function handleCommentsMicroblog(iq) {
 		node = $(data).find('publish:first').attr('node');
 	
 	// Get the parent microblog item
-	var parent_select = $('#channel .one-update:has(*[data-node=' + node + '])');
+	var parent_select = $('#channel .one-update:has(*[data-node="' + node + '"])');
 	var parent_data = [parent_select.attr('data-xid'), NS_URN_MBLOG, parent_select.attr('data-id')];
 	
 	// Get the owner XID
@@ -483,7 +492,7 @@ function handleCommentsMicroblog(iq) {
 		var current_xid = explodeThis(':', $(this).find('source author uri').text(), 1);
 		var current_name = $(this).find('source author name').text();
 		var current_date = $(this).find('published').text();
-		var current_body = $(this).find('content[type=text]').text();
+		var current_body = $(this).find('content[type="text"]').text();
 		var current_bname = getBuddyName(current_xid);
 		
 		// Legacy?
@@ -491,7 +500,7 @@ function handleCommentsMicroblog(iq) {
 			current_body = $(this).find('title:not(source > title)').text();
 		
 		// Yet displayed? (continue the loop)
-		if($(path).find('.one-comment[data-id=' + current_id + ']').size())
+		if($(path).find('.one-comment[data-id="' + current_id + '"]').size())
 			return;
 		
 		// No XID?
@@ -652,11 +661,11 @@ function showCommentsMicroblog(path, entityComments, nodeComments, tHash) {
 		
 		// Remove the comments from the DOM if click away
 		if(tHash) {
-			$('#channel').die('click');
+			$('#channel').off('click');
 			
-			$('#channel').live('click', function(evt) {
+			$('#channel').on('click', function(evt) {
 				if(!$(evt.target).parents('.' + tHash).size()) {
-					$('#channel').die('click');
+					$('#channel').off('click');
 					$('#channel .one-update div.comments-content').stopTime();
 					$('#channel .one-update div.comments').remove();
 				}
@@ -725,7 +734,7 @@ function removeCommentMicroblog(server, node, id) {
 	/* REF: http://xmpp.org/extensions/xep-0060.html#publisher-delete */
 	
 	// Remove the item from our DOM
-	$('.one-comment[data-id=' + id + ']').slideUp('fast', function() {
+	$('.one-comment[data-id="' + id + '"]').slideUp('fast', function() {
 		// Get the parent ID
 		var parent_id = $(this).parents('div.comments').attr('data-id');
 		
@@ -752,7 +761,7 @@ function removeCommentMicroblog(server, node, id) {
 
 // Adapts the comment elements width
 function adaptCommentMicroblog(id) {
-	var selector = $('div.comments[data-id=' + id + '] div.comments-content');
+	var selector = $('div.comments[data-id="' + id + '"] div.comments-content');
 	var selector_width = selector.width();
 	
 	// Change widths
@@ -790,7 +799,7 @@ function handleMicroblog(iq) {
 			$('#channel .individual a.more').remove();
 		
 		// Get the comments?
-		var comments_node = $('#channel .top.individual input[name=comments]').val();
+		var comments_node = $('#channel .top.individual input[name="comments"]').val();
 		
 		if(comments_node && comments_node.match(/^xmpp:(.+)\?;node=(.+);item=(.+)/)) {
 			// Get the values
@@ -798,8 +807,8 @@ function handleMicroblog(iq) {
 			comments_node = decodeURIComponent(RegExp.$2);
 			
 			// Selectors
-			var file_link = $('#channel .individual .one-update p.file a[data-node=' + comments_node + ']');
-			var entry_link = $('#channel .individual .one-update:has(.comments-container[data-node=' + comments_node + '])');
+			var file_link = $('#channel .individual .one-update p.file a[data-node="' + comments_node + '"]');
+			var entry_link = $('#channel .individual .one-update:has(.comments-container[data-node="' + comments_node + '"])');
 			
 			// Is it a microblog entry (or a lonely entry file)?
 			if(entry_link.size()) {
@@ -947,7 +956,7 @@ function getMicroblog(xid, hash, check) {
 	var items = '0';
 	
 	if(!check)
-		items = $('#channel .top.individual input[name=counter]').val();
+		items = $('#channel .top.individual input[name="counter"]').val();
 	
 	// Request
 	if(check)
@@ -967,7 +976,7 @@ function waitMicroblog(type) {
 	$('#channel .footer div.' + type).show();
 	
 	// Depending on the type, disable/enable certain tools
-	var selector = $('#channel .top input[name=microblog_body]');
+	var selector = $('#channel .top input[name="microblog_body"]');
 	
 	if(type == 'unsync')
 		selector.attr('disabled', true);
@@ -1065,8 +1074,8 @@ function handleGetConfigMicroblog(iq) {
 	var maxnotices = '1000000';
 	
 	// Get the values
-	var xPersistent = selector.find('field[var=pubsub#persist_items] value:first').text();
-	var xMaxnotices = selector.find('field[var=pubsub#max_items] value:first').text();
+	var xPersistent = selector.find('field[var="pubsub#persist_items"] value:first').text();
+	var xMaxnotices = selector.find('field[var="pubsub#max_items"] value:first').text();
 	
 	// Any value?
 	if(xPersistent)
@@ -1103,8 +1112,8 @@ function handleGetConfigMicroblog(iq) {
 // Handles the user's microblog
 function handleMyMicroblog(packet) {
 	// Reset the entire form
-	$('#channel .top input[name=microblog_body]').removeAttr('disabled').val('');
-	$('#channel .top input[name=microblog_body]').placeholder();
+	$('#channel .top input[name="microblog_body"]').removeAttr('disabled').val('');
+	$('#channel .top input[name="microblog_body"]').placeholder();
 	unattachMicroblog();
 	
 	// Check for errors
@@ -1118,7 +1127,7 @@ function sendMicroblog() {
 	// Avoid nasty errors
 	try {
 		// Get the values
-		var selector = $('#channel .top input[name=microblog_body]');
+		var selector = $('#channel .top input[name="microblog_body"]');
 		var body = trim(selector.val());
 		
 		// Sufficient parameters
@@ -1307,14 +1316,14 @@ function attachMicroblog() {
 	
 	// Upload form submit event
 	$('#attach').submit(function() {
-		if(!exists('#attach .wait') && $('#attach input[type=file]').val())
+		if(!exists('#attach .wait') && $('#attach input[type="file"]').val())
 			$(this).ajaxSubmit(attach_options);
 		
 		return false;
 	});
 	
 	// Upload input change event
-	$('#attach input[type=file]').change(function() {
+	$('#attach input[type="file"]').change(function() {
 		if(!exists('#attach .wait') && $(this).val())
 			$('#attach').ajaxSubmit(attach_options);
 		
@@ -1326,7 +1335,7 @@ function attachMicroblog() {
 function unattachMicroblog(id) {
 	// Individual removal?
 	if(id)
-		$('#attach .one-file[data-id=' + id + ']').remove();
+		$('#attach .one-file[data-id="' + id + '"]').remove();
 	else
 		$('#attach .one-file').remove();
 	
@@ -1351,7 +1360,7 @@ function unattachMicroblog(id) {
 // Wait event for file attaching
 function waitMicroblogAttach() {
 	// Append the wait icon
-	$('#attach input[type=submit]').after('<div class="wait wait-medium"></div>');
+	$('#attach input[type="submit"]').after('<div class="wait wait-medium"></div>');
 	
 	// Lock the bubble
 	$('#attach').removeClass('bubble');
@@ -1386,7 +1395,7 @@ function handleMicroblogAttach(responseXML) {
 		);
 		
 		// Click event
-		$('#attach .one-file[data-id=' + fID + '] a.remove').click(function() {
+		$('#attach .one-file[data-id="' + fID + '"] a.remove').click(function() {
 			return unattachMicroblog(fID);
 		});
 		
@@ -1409,12 +1418,12 @@ function handleMicroblogAttach(responseXML) {
 	}
 	
 	// Reset the attach bubble
-	$('#attach input[type=file]').val('');
+	$('#attach input[type="file"]').val('');
 	$('#attach .wait').remove();
 	
 	// Focus on the text input
 	$(document).oneTime(10, function() {
-		$('#channel .top input[name=microblog_body]').focus();
+		$('#channel .top input[name="microblog_body"]').focus();
 	});
 }
 
@@ -1433,7 +1442,7 @@ function fromInfosMicroblog(xid, hash) {
 // Plugin launcher
 function launchMicroblog() {
 	// Keyboard event
-	$('#channel .top input[name=microblog_body]').keyup(function(e) {
+	$('#channel .top input[name="microblog_body"]').keyup(function(e) {
 		// Enter pressed: send the microblog notice
 		if((e.keyCode == 13) && !exists('#attach .wait'))
 			return sendMicroblog();

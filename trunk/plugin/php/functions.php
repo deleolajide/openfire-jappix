@@ -8,8 +8,8 @@ These are the PHP functions for Jappix
 -------------------------------------------------
 
 License: AGPL
-Authors: Vanaryon, LinkMauve, Mathieui, olivierm, regilero
-Last revision: 21/06/12
+Authors: Valérian Saliou, LinkMauve, Mathieui, olivierm, regilero, Maranda
+Last revision: 08/02/13
 
 */
 
@@ -591,13 +591,10 @@ function genHash($version) {
 function hideErrors() {
 	// Hide errors if not developer
 	if(!isDeveloper()) {
-		ini_set('display_errors', 'off');
-		ini_set('error_reporting', 0);
-	}
-	
-	// Developers need to get error reports!
-	else {
-		ini_set('display_errors', 'on');
+		ini_set('display_errors', 0);
+		//ini_set('error_reporting', 0); not used anymore since we still need errors to be logged in /var/logs
+	} else {
+		ini_set('display_errors', 1);
 		ini_set('error_reporting', E_ALL);
 	}
 }
@@ -1374,7 +1371,7 @@ function manageUsers($action, $array) {
 }
 
 // Resize an image with GD
-function resizeImage($path, $ext, $width, $height) {
+function resizeImage($path, $ext, $width, $height, $mode = 'default') {
 	// No GD?
 	if(!function_exists('gd_info'))
 		return false;
@@ -1400,29 +1397,80 @@ function resizeImage($path, $ext, $width, $height) {
 		$img_size = getimagesize($path);
 		$img_width = $img_size[0];
 		$img_height = $img_size[1];
-	
+		$new_x = 0;
+		$new_y = 0;
+		
+		// Check if we need to generate a square
+		if(($mode == 'square') && ($img_width != $img_height) && ($width == $height))
+			$square = true;
+		else
+			$square = false;
+		
 		// Necessary to change the image width
-		if($img_width > $width && ($img_width > $img_height)) {
+		if(($img_width > $width) && ($img_width > $img_height)) {
 			// Process the new sizes
 			$new_width = $width;
 			$img_process = (($new_width * 100) / $img_width);
 			$new_height = (($img_height * $img_process) / 100);
+			
+			// Process square size
+			if($square) {
+				$new_x = ceil(($img_width - $img_height) / 2);
+				$square_width = $img_height;
+				$square_height = $img_height;
+			}
 		}
-	
+		
 		// Necessary to change the image height
-		else if($img_height > $height && ($img_width < $img_height)) {
+		else if(($img_height > $height) && ($img_width < $img_height)) {
 			// Process the new sizes
 			$new_height = $height;
 			$img_process = (($new_height * 100) / $img_height);
 			$new_width = (($img_width * $img_process) / 100);
+			
+			// Process square size
+			if($square) {
+				$square_width = $img_width;
+				$square_height = $img_width;
+			}
 		}
-	
+		
 		// Else, just use the old sizes
 		else {
 			$new_width = $img_width;
 			$new_height = $img_height;
+			
+			// Process square size
+			if($square) {
+				if($img_height < $img_width) {
+					$new_x = ceil(($img_width - $img_height) / 2);
+					$square_width = $img_height;
+					$square_height = $img_height;
+				} else {
+					$square_width = $img_width;
+					$square_height = $img_width;
+				}
+			}
 		}
-	
+		
+		// Re-create image in case of square
+		if($square) {
+			// Select a square of the full image
+			$square_img = imagecreatetruecolor($square_width, $square_height);
+			imagecopy($square_img, $img_resize, 0, 0, $new_x, $new_y, $square_width, $square_height);
+			
+			// Re-set image width & height with square ones
+			$img_width = $square_width;
+			$img_height = $square_height;
+			
+			$new_width = $width;
+			$new_height = $height;
+			
+			// Re-set resized image
+			unset($img_resize);
+			$img_resize = $square_img;
+		}
+		
 		// Create the new image
 		$new_img = imagecreatetruecolor($new_width, $new_height);
 		
@@ -1437,12 +1485,12 @@ function resizeImage($path, $ext, $width, $height) {
 		}
 		
 		// Copy the new image
-		imagecopyresampled($new_img, $img_resize, 0, 0, 0, 0, $new_width, $new_height, $img_size[0], $img_size[1]);
-	
+		imagecopyresampled($new_img, $img_resize, 0, 0, 0, 0, $new_width, $new_height, $img_width, $img_height);
+		
 		// Destroy the old data
 		imagedestroy($img_resize);
 		unlink($path);
-	
+		
 		// Write the new image
 		switch($ext) {
 			case 'png':

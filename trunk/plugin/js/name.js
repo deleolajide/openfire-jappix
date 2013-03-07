@@ -6,7 +6,7 @@ These are the buddy name related JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 29/04/11
 
 */
@@ -25,7 +25,7 @@ function getAddUserName(xid) {
 // Handles an user name for buddy add tool
 function handleAddUserName(iq) {
 	// Was it an obsolete request?
-	if(!exists('.add-contact-name-get[data-for=' + escape(bareXID(getStanzaFrom(iq))) + ']'))
+	if(!exists('.add-contact-name-get[data-for="' + escape(bareXID(getStanzaFrom(iq))) + '"]'))
 		return false;
 	
 	// Reset the waiting item
@@ -87,7 +87,7 @@ function getBuddyName(xid) {
 	
 	// Not me!
 	else {
-		cname = $('#buddy-list .buddy[data-xid=' + escape(xid) + ']:first .buddy-name').html();
+		cname = $('#buddy-list .buddy[data-xid="' + escape(xid) + '"]:first .buddy-name').html();
 		
 		// If the complete name exists
 		if(cname)
@@ -103,14 +103,16 @@ function getBuddyName(xid) {
 
 // Gets the nickname of the user
 function getNick() {
-	// Try to read the user nickname
-	var nick = getDB('profile', 'nick');
-	
-	// No nick?
-	if(!nick)
-		nick = con.username;
-	
-	return nick;
+	try {
+		// Try to read the user nickname
+		var nick = getDB('profile', 'nick');
+		
+		// No nick?
+		if(!nick)
+			nick = con.username;
+		
+		return nick;
+	} catch(e) {}
 }
 
 // Gets the full name of the user

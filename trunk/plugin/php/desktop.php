@@ -8,8 +8,8 @@ This is the Jappix Desktop PHP/HTML code
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 12/06/12
+Author: Valérian Saliou
+Last revision: 22/09/12
 
 */
 
@@ -23,7 +23,7 @@ if(!defined('JAPPIX_BASE'))
 
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title><?php echo htmlspecialchars(SERVICE_NAME); ?> &bull; <?php _e("An open social network"); ?></title>
+	<title><?php echo htmlspecialchars(SERVICE_NAME); ?> &bull; <?php echo htmlspecialchars(SERVICE_DESC); ?></title>
 	<link rel="shortcut icon" href="./favicon.ico" />
 	
 	<?php echoGetFiles($hash, '', 'css', 'desktop.xml', ''); echo "\n"; ?>
@@ -59,47 +59,81 @@ if(!anonymousMode() && !httpAuthEnabled()) { ?>
 		<div class="home-images plane"></div>
 		
 		<div class="main">
-			<div class="left">
-				<div class="home-images logo"></div>
-				<p class="upper"><?php _e("Communicate with the entire world!"); ?></p>
-				<p class="secondary"><?php _e("Jappix is a great social platform, that you can access wherever you are, whenever you want and communicate with whovever you want."); ?></p>
-				<p class="secondary"><?php _e("It allows you to get in touch with the millions of users who currently use the XMPP network like you do with Jappix. Join the community and stay free!"); ?></p>
+			<div class="mainview">
+				<div class="left">
+					<div class="home-images logo"></div>
+					<p class="upper"><?php _e("Communicate with the entire world!"); ?></p>
+					<p class="secondary"><?php _e("Jappix is an open social platform, that let's you easily get or keep in touch with everyone."); ?></p>
+					<p class="secondary"><?php _e("Join the millions of users who are currently using the XMPP Network (Google Talk, etc), don't stay out!"); ?></p>
+				</div>
+				
+				<div class="right">
+					<h1 class="top default"><?php _e("Hi there!"); ?></h1>
+					
+					<div class="default homediv">
+						<p><?php printf(T_("Welcome on %1s, “%2s”."), htmlspecialchars(SERVICE_NAME), htmlspecialchars(SERVICE_DESC)); ?></p>
+						
+						<p><?php _e("Login to your existing XMPP account or create a new one for free!"); ?></p>
+						
+						<button class="login buttons-images">
+							<span class="home-images"></span>
+							<span class="text"><?php _e("Login"); ?></span>
+						</button>
+						
+						<button class="register buttons-images">
+							<span class="home-images"></span>
+							<span class="text"><?php _e("Register"); ?></span>
+						</button>
+						
+						<p class="notice"><?php _e("For your account safety, when you login or register, make sure your password remains secret."); ?></p>
+					</div>
+					
+					<div class="navigation">
+						<?php
+						
+							// Keep get var
+							$keep_get = keepGet('m', false);
+						
+						?>
+						<a class="home-images mobile" href="./?m=mobile<?php echo $keep_get; ?>"><span class="vert_center"><?php _e("Mobile"); ?></span></a>
+						<?php if(showManagerLink()) { ?>
+						<a class="home-images manager" href="./?m=manager<?php echo $keep_get; ?>"><span class="vert_center"><?php _e("Manager"); ?></span></a>
+						<?php } if(sslCheck() && !httpsForce()) echo sslLink(); ?>
+					</div>
+				</div>
 			</div>
 			
-			<div class="right">
-				<h1 class="top default"><?php _e("Hi there!"); ?></h1>
+			<?php if((ADS_ENABLE == 'on') && (ADS_STANDARD || ADS_STANDARD)) { ?>
+				<?php require_once('./php/functions-advertising.php'); ?>
+				<?php $advertise_link = 'http://www.backlinks.com/?aff=58769'; ?>
 				
-				<div class="default homediv">
-					<p><?php printf(T_("Welcome on %1s, “%2s”."), htmlspecialchars(SERVICE_NAME), htmlspecialchars(SERVICE_DESC)); ?></p>
-					
-					<p><?php _e("Login to your existing XMPP account or create a new one for free!"); ?></p>
-					
-					<button class="login buttons-images">
-						<span class="home-images"></span>
-						<span class="text"><?php _e("Login"); ?></span>
-					</button>
-					
-					<button class="register buttons-images">
-						<span class="home-images"></span>
-						<span class="text"><?php _e("Register"); ?></span>
-					</button>
-					
-					<p class="notice"><?php _e("When you login or register, make sure your password remains secret. Don't give it to others, it is personal!"); ?></p>
+				<div class="friendsview">
+					<div class="friends">
+						<div class="group content">
+							<?php displayAdverts('content', $advertise_link); ?>
+						</div>
+						
+						<div class="group standard">
+							<div class="separator">
+								<span class="top"></span>
+								<span class="bottom"></span>
+							</div>
+							
+							<?php displayAdverts('standard', $advertise_link); ?>
+						</div>
+						
+						<a class="group refer" href="<?php echo $advertise_link; ?>" target="_blank">
+							<div class="separator">
+								<span class="top"></span>
+								<span class="bottom"></span>
+							</div>
+							
+							<span class="home-images icon"></span>
+							<span class="label"><?php _e("Advertise here"); ?></span>
+						</a>
+					</div>
 				</div>
-				
-				<div class="navigation">
-					<?php
-					
-						// Keep get var
-						$keep_get = keepGet('m', false);
-					
-					?>
-					<a class="home-images mobile" href="./?m=mobile<?php echo $keep_get; ?>"><span class="vert_center"><?php _e("Mobile"); ?></span></a>
-					<?php if(showManagerLink()) { ?>
-					<a class="home-images manager" href="./?m=manager<?php echo $keep_get; ?>"><span class="vert_center"><?php _e("Manager"); ?></span></a>
-					<?php } if(sslCheck() && !httpsForce()) echo sslLink(); ?>
-				</div>
-			</div>
+			<?php } ?>
 		</div>
 		
 		<div class="home-images corporation">
@@ -141,14 +175,6 @@ if(!anonymousMode() && !httpAuthEnabled()) { ?>
 					<a href="http://developer.jappix.org/">
 						<span class="name">Jappix Developer</span>
 						<span class="desc"><?php _e("Contribute to the Jappix code."); ?></span>
-					</a>
-				</div>
-				
-				<h2>Jappix.mobi</h2>
-				<div class="tabulate">
-					<a href="http://jappix.mobi/">
-						<span class="name">Jappix Mobile</span>
-						<span class="desc"><?php _e("Jappix for your mobile phone."); ?></span>
 					</a>
 				</div>
 				
@@ -235,6 +261,8 @@ if(!anonymousMode() && !httpAuthEnabled()) { ?>
 	<noscript class="one-board info visible"><?php _e("JavaScript is missing in your web browser, so that you will not be able to launch Jappix! Please fix this."); ?></noscript>
 </div>
 <!-- END BOARD -->
+
+<?php include(JAPPIX_BASE.'/php/analytics.php'); ?>
 
 </body>
 

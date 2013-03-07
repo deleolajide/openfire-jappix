@@ -6,8 +6,8 @@ These are the homepage JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Authors: Vanaryon, LinkMauve
-Last revision: 21/06/12
+Authors: Valérian Saliou, LinkMauve
+Last revision: 05/03/13
 
 */
 
@@ -132,11 +132,16 @@ function switchHome(div) {
 						'<legend>' + _e("Required") + '</legend>' + 
 						
 						'<label for="rnick">' + _e("Address") + '</label>' + 
-						'<input type="text" class="nick" id="rnick" ' + disable_form + ' pattern="[^@/]+" required="" /><span class="jid">@</span><input type="text" class="server" id="rserver" value="' + HOST_MAIN + '" ' + disable_form + lock_host + ' pattern="[^@/]+" required="" />' + 
+						'<input type="text" class="nick" id="rnick" ' + disable_form + ' pattern="[^@/]+" required="" placeholder="' + _e("Username") + '" /><span class="jid">@</span><input type="text" class="server" id="rserver" value="' + HOST_MAIN + '" ' + disable_form + lock_host + ' pattern="[^@/]+" required="" placeholder="' + _e("Server") + '" />' + 
 						'<label for="rpassword">' + _e("Password") + '</label>' + 
-						'<input type="password" class="password" id="rpassword" ' + disable_form + ' required="" />' + 
-						'<label for="spassword">' + _e("Confirm") + '</label><input type="password" class="spassword" id="spassword" ' + disable_form + ' required="" />' + 
-					'</fieldset>' + 
+						'<input type="password" class="password" id="rpassword" ' + disable_form + ' required="" placeholder="' + _e("Enter password") + '" /><input type="password" class="spassword" id="spassword" ' + disable_form + ' required="" placeholder="' + _e("Once again...") + '" />';
+			
+			if(REGISTER_API == 'on')
+				code += '<div class="captcha_grp">' + 
+							'<label for="captcha">' + _e("Code") + '</label><input type="text" class="captcha" id="captcha" ' + disable_form + ' maxlength="6" pattern="[a-zA-Z0-9]{6}" required="" placeholder="' + _e("Security code") + '" /><img class="captcha_img" src="./php/captcha.php?id=' + genID() + '" alt="" />' + 
+						'</div>';
+			
+			code += '</fieldset>' + 
 					
 					'<input type="submit" value="' + _e("Here we go!") + '" ' + disable_form + '/>' + 
 				'</form>';
@@ -147,7 +152,7 @@ function switchHome(div) {
 	// Form disabled?
 	if(disable_form)
 		code += '<div class="info fail">' + 
-				_e("This tool has been disabled, you cannot use it!") + 
+				_e("This tool has been disabled!") + 
 			'</div>';
 	
 	// Create this HTML code
@@ -198,6 +203,22 @@ function switchHome(div) {
 			
 			// Register tool
 			case 'registerer':
+				// Server input change
+				$('#home input.server').keyup(function(e) {
+					if(trim($(this).val()) == HOST_MAIN) {
+						$('#home .captcha_grp').show();
+						$('#home input.captcha').removeAttr('disabled');
+					} else {
+						$('#home .captcha_grp').hide();
+						$('#home input.captcha').attr('disabled', true);
+					}
+				});
+				
+				// Register input placeholder
+				// FIXME: breaks IE compatibility
+				//$('#home input[placeholder]').placeholder();
+				
+				// Register form submit
 				$(current + ' form').submit(registerForm);
 				
 				break;
@@ -235,12 +256,10 @@ function loginForm() {
 	var lRemember = $(lPath + '.remember').filter(':checked').size();
 	
 	// Enough values?
-	if(lServer && lNick && lPass && lResource && lPriority)
+	if(lServer && lNick && lPass && lResource && lPriority) {
 		doLogin(lNick, lServer, lPass, lResource, lPriority, lRemember);
-	
-	// Something is missing?
-	else {
-		$(lPath + 'input[type=text], ' + lPath + 'input[type=password]').each(function() {
+	} else {
+		$(lPath + 'input[type="text"], ' + lPath + 'input[type="password"]').each(function() {
 			var select = $(this);
 			
 			if(!select.val())
@@ -267,19 +286,20 @@ function registerForm() {
 	var domain = $(rPath + '.server').val();
 	var pass = $(rPath + '.password').val();
 	var spass = $(rPath + '.spassword').val();
+	var captcha = $(rPath + '.captcha').val();
 	
 	// Enough values?
-	if(domain && username && pass && spass && (pass == spass)) {
+	if(domain && username && pass && spass && (pass == spass) && !((REGISTER_API == 'on') && (domain == HOST_MAIN) && !captcha)) {
 		// We remove the not completed class to avoid problems
 		$('#home .registerer input').removeClass('please-complete');
 		
 		// Fire the register event!
-		doRegister(username, domain, pass);
+		doRegister(username, domain, pass, captcha);
 	}
 	
 	// Something is missing?
 	else {
-		$(rPath + 'input[type=text], ' + rPath + 'input[type=password]').each(function() {
+		$(rPath + 'input[type="text"], ' + rPath + 'input[type="password"]').each(function() {
 			var select = $(this);
 			
 			if(!select.val() || (select.is('#spassword') && pass && (pass != spass)))
@@ -347,6 +367,10 @@ function launchHome() {
 		if((e.keyCode == 27) && !isDeveloper())
 			return false;
 	});
+	
+	// Slide down the friend links
+	if(exists('#home .friendsview .friends'))
+		$('#home .friendsview .friends').hide().slideDown(750);
 	
 	// Warns for an obsolete browser
 	if(isObsolete()) {

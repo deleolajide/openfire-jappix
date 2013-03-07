@@ -6,7 +6,7 @@ This is the favorites CSS stylesheet for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 10/04/12
 
 */
@@ -118,7 +118,7 @@ Last revision: 10/04/12
 	float: right;
 }
 
-#favorites input[type=checkbox] {
+#favorites input[type="checkbox"] {
 	margin-top: 5px;
 }
 

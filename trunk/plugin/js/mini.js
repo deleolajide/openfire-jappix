@@ -6,30 +6,34 @@ These are the Jappix Mini JS scripts for Jappix
 -------------------------------------------------
 
 License: dual-licensed under AGPL and MPLv2
-Authors: Vanaryon, hunterjm, Camaran, regilero, Kloadut
-Last revision: 18/06/12
+Authors: Valérian Saliou, hunterjm, Camaran, regilero, Kloadut
+Last revision: 23/01/13
 
 */
 
-// Jappix Mini vars
-var MINI_DISCONNECT		= false;
-var MINI_AUTOCONNECT	= false;
-var MINI_SHOWPANE		= false;
-var MINI_INITIALIZED	= false;
-var MINI_ANONYMOUS		= false;
-var MINI_ANIMATE		= false;
-var MINI_RANDNICK		= false;
-var MINI_NICKNAME		= null;
-var MINI_TITLE			= null;
-var MINI_DOMAIN			= null;
-var MINI_USER			= null;
-var MINI_PASSWORD		= null;
-var MINI_RECONNECT		= 0;
-var MINI_CHATS			= [];
-var MINI_GROUPCHATS		= [];
-var MINI_PASSWORDS		= [];
-var MINI_RESOURCE		= JAPPIX_RESOURCE + ' Mini';
-var MINI_ERROR_LINK		= 'https://mini.jappix.com/issues';
+// Jappix Mini globals
+var MINI_DISCONNECT				= false;
+var MINI_AUTOCONNECT			= false;
+var MINI_SHOWPANE				= false;
+var MINI_INITIALIZED			= false;
+var MINI_ANONYMOUS				= false;
+var MINI_ANIMATE				= false;
+var MINI_RANDNICK				= false;
+var MINI_NICKNAME				= '';
+var MINI_TITLE					= null;
+var MINI_DOMAIN					= null;
+var MINI_USER					= null;
+var MINI_PASSWORD				= null;
+var MINI_ACTIVE					= null;
+var MINI_RECONNECT				= 0;
+var MINI_CHATS					= [];
+var MINI_GROUPCHATS				= [];
+var MINI_SUGGEST_CHATS			= [];
+var MINI_SUGGEST_GROUPCHATS		= [];
+var MINI_SUGGEST_PASSWORDS		= [];
+var MINI_PASSWORDS				= [];
+var MINI_RESOURCE				= JAPPIX_RESOURCE + ' Mini';
+var MINI_ERROR_LINK				= 'https://mini.jappix.com/issues';
 
 // Setups connection handlers
 function setupConMini(con) {
@@ -53,10 +57,6 @@ function connectMini(domain, user, password) {
 		
 		// We create the new http-binding connection
 		con = new JSJaCHttpBindingConnection(oArgs);
-
-		// We create the new openfire websockets connection
-		//con = new JSJaCOpenfireWSConnection(oArgs);
-
 		
 		// And we handle everything that happen
 		setupConMini(con);
@@ -255,212 +255,6 @@ function disconnectedMini() {
 	logThis('Jappix Mini is now disconnected.', 3);
 }
 
-// Handles the incoming messages
-function handleMessageMini(msg) {
-	var type = msg.getType();
-	
-	// This is a message Jappix can handle
-	if((type == 'chat') || (type == 'normal') || (type == 'groupchat') || !type) {
-		// Get the body
-		var body = trim(msg.getBody());
-		
-		// Any subject?
-		var subject = trim(msg.getSubject());
-		
-		if(subject)
-			body = subject;
-		
-		if(body) {
-			// Get the values
-			var from = fullXID(getStanzaFrom(msg));
-			var xid = bareXID(from);
-			var use_xid = xid;
-			var hash = hex_md5(xid);
-			var nick = thisResource(from);
-			
-			// Read the delay
-			var delay = readMessageDelay(msg.getNode());
-			var d_stamp;
-			
-			// Manage this delay
-			if(delay) {
-				time = relativeDate(delay);
-				d_stamp = Date.jab2date(delay);
-			}
-			
-			else {
-				time = getCompleteTime();
-				d_stamp = new Date();
-			}
-			
-			// Get the stamp
-			var stamp = extractStamp(d_stamp);
-			
-			// Is this a groupchat private message?
-			if(exists('#jappix_mini #chat-' + hash + '[data-type=groupchat]')) {
-				// Regenerate some stuffs
-				if((type == 'chat') || !type) {
-					xid = from;
-					hash = hex_md5(xid);
-				}
-				
-				// XID to use for a groupchat
-				else
-					use_xid = from;
-			}
-			
-			// Message type
-			var message_type = 'user-message';
-			
-			// Grouphat values
-			if(type == 'groupchat') {
-				// Old message
-				if(msg.getChild('delay', NS_URN_DELAY) || msg.getChild('x', NS_DELAY))
-					message_type = 'old-message';
-				
-				// System message?
-				if(!nick || subject) {
-					nick = '';
-					message_type = 'system-message';
-				}
-			}
-			
-			// Chat values
-			else {
-				nick = jQuery('#jappix_mini a#friend-' + hash).text().revertHtmlEnc();
-				
-				// No nickname?
-				if(!nick) {
-				    // if the roster does not give us any nick the user may have send us a nickname to use with his first message
-                                   // @see http://xmpp.org/extensions/xep-0172.html
-                                   // we first check we do not have made this stuff before
-                                   var unknown_entry = jQuery("a.jm_unknown[data-xid="+xid+"]",jQuery("#jappix_mini"));
-                                   if (unknown_entry.length > 0) {
-                                       nick =  unknown_entry.attr('data-nick');
-                                   } else {
-                                       msgnick = msg.getNick();
-                                       nick = getXIDNick(xid);
-                                       if (msgnick) {
-                                           if (nick != msgnick) {
-                                               // if there is a nickname in the message which differs from the jid-extracted nick then tell it to the user
-                                               nick = msgnick + ' (' + nick + ')';
-                                           }
-                                       }
-                                       //push that unknown guy in a temporary roster entry
-                                       var unknown_entry = jQuery('<a class="jm_unknown jm_offline" href="#"></a>')
-                                                           .attr('data-nick',nick)
-                                                           .attr('data-xid',xid);
-                                       unknown_entry.appendTo(jQuery(".jm_buddies",jQuery("#jappix_mini")));
-                                   }
-				}
-			}
-			
-			// Define the target div
-			var target = '#jappix_mini #chat-' + hash;
-			
-			// Create the chat if it does not exist
-			if(!exists(target) && (type != 'groupchat'))
-				chatMini(type, xid, nick, hash);
-			
-			// Display the message
-			displayMessageMini(type, body, use_xid, nick, hash, time, stamp, message_type);
-			
-			// Notify the user if not focused & the message is not a groupchat old one
-			if((!jQuery(target + ' a.jm_chat-tab').hasClass('jm_clicked') || !isFocused()) && (message_type == 'user-message'))
-				notifyMessageMini(hash);
-			
-			logThis('Message received from: ' + from);
-		}
-	}
-}
-
-// Handles the incoming IQs
-function handleIQMini(iq) {
-	// Define some variables
-	var iqFrom = fullXID(getStanzaFrom(iq));
-	var iqID = iq.getID();
-	var iqQueryXMLNS = iq.getQueryXMLNS();
-	var iqType = iq.getType();
-	var iqNode = iq.getNode();
-	
-	// Build the response
-	var iqResponse = new JSJaCIQ();
-	
-	iqResponse.setID(iqID);
-	iqResponse.setTo(iqFrom);
-	iqResponse.setType('result');
-	
-	// Software version query
-	if((iqQueryXMLNS == NS_VERSION) && (iqType == 'get')) {
-		/* REF: http://xmpp.org/extensions/xep-0092.html */
-		
-		var iqQuery = iqResponse.setQuery(NS_VERSION);
-		
-		iqQuery.appendChild(iq.buildNode('name', {'xmlns': NS_VERSION}, 'Jappix Mini'));
-		iqQuery.appendChild(iq.buildNode('version', {'xmlns': NS_VERSION}, JAPPIX_VERSION));
-		iqQuery.appendChild(iq.buildNode('os', {'xmlns': NS_VERSION}, navigator.platform));
-		
-		con.send(iqResponse);
-		
-		logThis('Received software version query: ' + iqFrom);
-	}
-	
-	// Roster push
-	else if((iqQueryXMLNS == NS_ROSTER) && (iqType == 'set')) {
-		// Display the friend
-		handleRosterMini(iq);
-		
-		con.send(iqResponse);
-		
-		logThis('Received a roster push.');
-	}
-	
-	// Disco info query
-	else if((iqQueryXMLNS == NS_DISCO_INFO) && (iqType == 'get')) {
-		/* REF: http://xmpp.org/extensions/xep-0030.html */
-		
-		var iqQuery = iqResponse.setQuery(NS_DISCO_INFO);
-		
-		// We set the name of the client
-		iqQuery.appendChild(iq.appendNode('identity', {
-			'category': 'client',
-			'type': 'web',
-			'name': 'Jappix Mini',
-			'xmlns': NS_DISCO_INFO
-		}));
-		
-		// We set all the supported features
-		var fArray = new Array(
-			NS_DISCO_INFO,
-			NS_VERSION,
-			NS_ROSTER,
-			NS_MUC,
-			NS_VERSION,
-			NS_URN_TIME
-		);
-		
-		for(i in fArray)
-			iqQuery.appendChild(iq.buildNode('feature', {'var': fArray[i], 'xmlns': NS_DISCO_INFO}));
-		
-		con.send(iqResponse);
-		
-		logThis('Received a disco#infos query.');
-	}
-	
-	// User time query
-	else if(jQuery(iqNode).find('time').size() && (iqType == 'get')) {
-		/* REF: http://xmpp.org/extensions/xep-0202.html */
-		
-		var iqTime = iqResponse.appendNode('time', {'xmlns': NS_URN_TIME});
-		iqTime.appendChild(iq.buildNode('tzo', {'xmlns': NS_URN_TIME}, getDateTZO()));
-		iqTime.appendChild(iq.buildNode('utc', {'xmlns': NS_URN_TIME}, getXMPPTime('utc')));
-		
-		con.send(iqResponse);
-		
-		logThis('Received local time query: ' + iqFrom);
-	}
-}
-
 // Handles the incoming errors
 function handleErrorMini(err) {
 	// First level error (connection error)
@@ -472,105 +266,371 @@ function handleErrorMini(err) {
 	}
 }
 
+// Handles the incoming messages
+function handleMessageMini(msg) {
+	try {
+		var type = msg.getType();
+		
+		// This is a message Jappix can handle
+		if((type == 'chat') || (type == 'normal') || (type == 'groupchat') || !type) {
+			// Get the packet data
+			var node = msg.getNode();
+			var subject = trim(msg.getSubject());
+			var body = subject ? subject : trim(msg.getBody());
+			
+			// Get the sender data
+			var from = fullXID(getStanzaFrom(msg));
+			var xid = bareXID(from);
+			var hash = hex_md5(xid);
+			
+			// Any attached message body?
+			if(body) {
+				// Get more sender data
+				var use_xid = xid;
+				var nick = thisResource(from);
+				
+				// Read the delay
+				var delay = readMessageDelay(node);
+				var d_stamp;
+				
+				// Manage this delay
+				if(delay) {
+					time = relativeDate(delay);
+					d_stamp = Date.jab2date(delay);
+				}
+				
+				else {
+					time = getCompleteTime();
+					d_stamp = new Date();
+				}
+				
+				// Get the stamp
+				var stamp = extractStamp(d_stamp);
+				
+				// Is this a groupchat private message?
+				if(exists('#jappix_mini #chat-' + hash + '[data-type="groupchat"]')) {
+					// Regenerate some stuffs
+					if((type == 'chat') || (type == 'normal') || !type) {
+						xid = from;
+						hash = hex_md5(xid);
+					}
+					
+					// XID to use for a groupchat
+					else
+						use_xid = from;
+				}
+				
+				// Message type
+				var message_type = 'user-message';
+				
+				// Grouphat values
+				if(type == 'groupchat') {
+					// Old message
+					if(msg.getChild('delay', NS_URN_DELAY) || msg.getChild('x', NS_DELAY))
+						message_type = 'old-message';
+					
+					// System message?
+					if(!nick || subject) {
+						nick = '';
+						message_type = 'system-message';
+					}
+				}
+				
+				// Chat values
+				else {
+					nick = jQuery('#jappix_mini a#friend-' + hash).text().revertHtmlEnc();
+					
+					// No nickname?
+					if(!nick) {
+						// If the roster does not give us any nick the user may have send us a nickname to use with his first message
+						// @see http://xmpp.org/extensions/xep-0172.html
+						var unknown_entry = jQuery('#jappix_mini a.jm_unknown[data-xid="' + xid + '"]');
+						
+						if(unknown_entry.size() > 0) {
+							nick =  unknown_entry.attr('data-nick');
+						} else {
+							var msgnick = msg.getNick();
+							nick = getXIDNick(xid);
+							
+							if(msgnick) {
+							 	// If there is a nickname in the message which differs from the jid-extracted nick then tell it to the user
+								if(nick != msgnick)
+									 nick = msgnick + ' (' + nick + ')';
+							}
+							
+							// Push that unknown guy in a temporary roster entry
+							var unknown_entry = jQuery('<a class="jm_unknown jm_offline" href="#"></a>').attr('data-nick', nick).attr('data-xid', xid);
+							unknown_entry.appendTo('#jappix_mini div.jm_roster div.jm_buddies');
+						 }
+					}
+				}
+				
+				// Define the target div
+				var target = '#jappix_mini #chat-' + hash;
+				
+				// Create the chat if it does not exist
+				if(!exists(target) && (type != 'groupchat'))
+					chatMini(type, xid, nick, hash);
+				
+				// Display the message
+				displayMessageMini(type, body, use_xid, nick, hash, time, stamp, message_type);
+				
+				// Notify the user if not focused & the message is not a groupchat old one
+				if((!jQuery(target + ' a.jm_chat-tab').hasClass('jm_clicked') || !isFocused() || (MINI_ACTIVE != hash)) && (message_type == 'user-message')) {
+					// Play a sound
+					if(type != 'groupchat')
+						soundPlayMini();
+					
+					// Show a notification bubble
+					notifyMessageMini(hash);
+				}
+				
+				logThis('Message received from: ' + from);
+			}
+			
+			// Chatstate groupchat filter
+			if(exists('#jappix_mini #chat-' + hash + '[data-type="groupchat"]')) {
+				xid = from;
+				hash = hex_md5(xid);
+			}
+			
+			// Reset current chatstate
+			resetChatstateMini(xid, hash, type);
+			
+			// Apply new chatstate (if supported)
+			if(jQuery(node).find('active[xmlns="' + NS_CHATSTATES + '"]').size() || jQuery(node).find('composing[xmlns="' + NS_CHATSTATES + '"]').size()) {
+				// Set marker to tell other user supports chatstates
+				jQuery('#jappix_mini #chat-' + hash + ' input.jm_send-messages').attr('data-chatstates', 'true');
+				
+				// Composing?
+				if(jQuery(node).find('composing[xmlns="' + NS_CHATSTATES + '"]').size())
+					displayChatstateMini('composing', xid, hash, type);
+			}
+		}
+	} catch(e) {
+		logThis('Error on message handler: ' + e, 1);
+	}
+}
+
+// Handles the incoming IQs
+function handleIQMini(iq) {
+	try {
+		// Define some variables
+		var iqFrom = fullXID(getStanzaFrom(iq));
+		var iqID = iq.getID();
+		var iqQueryXMLNS = iq.getQueryXMLNS();
+		var iqType = iq.getType();
+		var iqNode = iq.getNode();
+		
+		// Build the response
+		var iqResponse = new JSJaCIQ();
+		
+		iqResponse.setID(iqID);
+		iqResponse.setTo(iqFrom);
+		iqResponse.setType('result');
+		
+		// Software version query
+		if((iqQueryXMLNS == NS_VERSION) && (iqType == 'get')) {
+			/* REF: http://xmpp.org/extensions/xep-0092.html */
+			
+			var iqQuery = iqResponse.setQuery(NS_VERSION);
+			
+			iqQuery.appendChild(iq.buildNode('name', {'xmlns': NS_VERSION}, 'Jappix Mini'));
+			iqQuery.appendChild(iq.buildNode('version', {'xmlns': NS_VERSION}, JAPPIX_VERSION));
+			iqQuery.appendChild(iq.buildNode('os', {'xmlns': NS_VERSION}, navigator.platform));
+			
+			con.send(iqResponse);
+			
+			logThis('Received software version query: ' + iqFrom);
+		}
+		
+		// Roster push
+		else if((iqQueryXMLNS == NS_ROSTER) && (iqType == 'set')) {
+			// Display the friend
+			handleRosterMini(iq);
+			
+			con.send(iqResponse);
+			
+			logThis('Received a roster push.');
+		}
+		
+		// Disco info query
+		else if((iqQueryXMLNS == NS_DISCO_INFO) && (iqType == 'get')) {
+			/* REF: http://xmpp.org/extensions/xep-0030.html */
+			
+			var iqQuery = iqResponse.setQuery(NS_DISCO_INFO);
+			
+			// We set the name of the client
+			iqQuery.appendChild(iq.appendNode('identity', {
+				'category': 'client',
+				'type': 'web',
+				'name': 'Jappix Mini',
+				'xmlns': NS_DISCO_INFO
+			}));
+			
+			// We set all the supported features
+			var fArray = new Array(
+				NS_DISCO_INFO,
+				NS_VERSION,
+				NS_ROSTER,
+				NS_MUC,
+				NS_VERSION,
+				NS_URN_TIME
+			);
+			
+			for(i in fArray)
+				iqQuery.appendChild(iq.buildNode('feature', {'var': fArray[i], 'xmlns': NS_DISCO_INFO}));
+			
+			con.send(iqResponse);
+			
+			logThis('Received a disco#infos query.');
+		}
+		
+		// User time query
+		else if(jQuery(iqNode).find('time').size() && (iqType == 'get')) {
+			/* REF: http://xmpp.org/extensions/xep-0202.html */
+			
+			var iqTime = iqResponse.appendNode('time', {'xmlns': NS_URN_TIME});
+			iqTime.appendChild(iq.buildNode('tzo', {'xmlns': NS_URN_TIME}, getDateTZO()));
+			iqTime.appendChild(iq.buildNode('utc', {'xmlns': NS_URN_TIME}, getXMPPTime('utc')));
+			
+			con.send(iqResponse);
+			
+			logThis('Received local time query: ' + iqFrom);
+		}
+		
+		// Ping
+		else if(jQuery(iqNode).find('ping').size() && (iqType == 'get')) {
+			/* REF: http://xmpp.org/extensions/xep-0199.html */
+			
+			con.send(iqResponse);
+			
+			logThis('Received a ping: ' + iqFrom);
+		}
+		
+		// Not implemented
+		else if(!jQuery(iqNode).find('error').size() && ((iqType == 'get') || (iqType == 'set'))) {
+			// Append stanza content
+			for(var i = 0; i < iqNode.childNodes.length; i++)
+				iqResponse.getNode().appendChild(iqNode.childNodes.item(i).cloneNode(true));
+			
+			// Append error content
+			var iqError = iqResponse.appendNode('error', {'xmlns': NS_CLIENT, 'code': '501', 'type': 'cancel'});
+			iqError.appendChild(iq.buildNode('feature-not-implemented', {'xmlns': NS_STANZAS}));
+			iqError.appendChild(iq.buildNode('text', {'xmlns': NS_STANZAS}, _e("The feature requested is not implemented by the recipient or server and therefore cannot be processed.")));
+			
+			con.send(iqResponse);
+			
+			logThis('Received an unsupported IQ query from: ' + iqFrom);
+		}
+	} catch(e) {
+		logThis('Error on IQ handler: ' + e, 1);
+	}
+}
+
 // Handles the incoming presences
 function handlePresenceMini(pr) {
-	// Get the values
-	var from = fullXID(getStanzaFrom(pr));
-	var xid = bareXID(from);
-	var resource = thisResource(from);
-	var hash = hex_md5(xid);
-	var type = pr.getType();
-	var show = pr.getShow();
-	
-	// Manage the received presence values
-	if((type == 'error') || (type == 'unavailable'))
-		show = 'unavailable';
-	
-	else {
-		switch(show) {
-			case 'chat':
-			case 'away':
-			case 'xa':
-			case 'dnd':
-				break;
-			
-			default:
-				show = 'available';
+	try {
+		// Get the values
+		var from = fullXID(getStanzaFrom(pr));
+		var xid = bareXID(from);
+		var resource = thisResource(from);
+		var hash = hex_md5(xid);
+		var type = pr.getType();
+		var show = pr.getShow();
+		
+		// Manage the received presence values
+		if((type == 'error') || (type == 'unavailable'))
+			show = 'unavailable';
+		
+		else {
+			switch(show) {
+				case 'chat':
+				case 'away':
+				case 'xa':
+				case 'dnd':
+					break;
 				
-				break;
+				default:
+					show = 'available';
+					
+					break;
+			}
 		}
-	}
-	
-	// Is this a groupchat presence?
-	var groupchat_path = '#jappix_mini #chat-' + hash + '[data-type=groupchat]';
-	var is_groupchat = false;
-	
-	if(exists(groupchat_path)) {
-		// Groupchat exists
-		is_groupchat = true;
 		
-		// Groupchat buddy presence (not me)
-		if(resource != unescape(jQuery(groupchat_path).attr('data-nick'))) {
-			// Regenerate some stuffs
-			var groupchat = xid;
-			xid = from;
-			hash = hex_md5(xid);
+		// Is this a groupchat presence?
+		var groupchat_path = '#jappix_mini #chat-' + hash + '[data-type="groupchat"]';
+		var is_groupchat = false;
+		
+		if(exists(groupchat_path)) {
+			// Groupchat exists
+			is_groupchat = true;
 			
-			// Remove this from the roster
-			if(show == 'unavailable')
-				removeBuddyMini(hash, groupchat);
+			// Groupchat buddy presence (not me)
+			if(resource != unescape(jQuery(groupchat_path).attr('data-nick'))) {
+				// Regenerate some stuffs
+				var groupchat = xid;
+				xid = from;
+				hash = hex_md5(xid);
+				
+				// Remove this from the roster
+				if(show == 'unavailable')
+					removeBuddyMini(hash, groupchat);
+				
+				// Add this to the roster
+				else
+					addBuddyMini(xid, hash, resource, groupchat);
+			}
+		}
+		
+		// Friend path
+		var chat = '#jappix_mini #chat-' + hash;
+		var friend = '#jappix_mini a#friend-' + hash;
+		var send_input = chat + ' input.jm_send-messages';
+		
+		// Is this friend online?
+		if(show == 'unavailable') {
+			// Offline marker
+			jQuery(friend).addClass('jm_offline').removeClass('jm_online jm_hover');
 			
-			// Add this to the roster
-			else
-				addBuddyMini(xid, hash, resource, groupchat);
-		}
-	}
-	
-	// Friend path
-	var chat = '#jappix_mini #chat-' + hash;
-	var friend = '#jappix_mini a#friend-' + hash;
-	var send_input = chat + ' input.jm_send-messages';
-	
-	// Is this friend online?
-	if(show == 'unavailable') {
-		// Offline marker
-		jQuery(friend).addClass('jm_offline').removeClass('jm_online jm_hover');
-		
-		// Hide the friend just to be safe since the search uses .hide() and .show() which can override the CSS display attribute
-		jQuery(friend).hide();
-		
-		// Disable the chat tools
-		if(is_groupchat) {
-			jQuery(chat).addClass('jm_disabled');
-			jQuery(send_input).blur().attr('disabled', true).attr('data-value', _e("Unavailable")).val(_e("Unavailable"));
-		}
-	}
-	
-	else {
-		// Online marker
-		jQuery(friend).removeClass('jm_offline').addClass('jm_online');
-		
-		// Check against search string
-		var search = jQuery('#jappix_mini div.jm_roster div.jm_search input.jm_searchbox').val();
-		var regex = new RegExp('((^)|( ))' + escapeRegex(search), 'gi');
-		var nick = unescape(jQuery(friend).data('nick'));
-		if(search && !nick.match(regex))
+			// Hide the friend just to be safe since the search uses .hide() and .show() which can override the CSS display attribute
 			jQuery(friend).hide();
-		
-		// Enable the chat input
-		if(is_groupchat) {
-			jQuery(chat).removeClass('jm_disabled');
-			jQuery(send_input).removeAttr('disabled').val('');
+			
+			// Disable the chat tools
+			if(is_groupchat) {
+				jQuery(chat).addClass('jm_disabled');
+				jQuery(send_input).blur().attr('disabled', true).attr('data-value', _e("Unavailable")).val(_e("Unavailable"));
+			}
 		}
+		
+		else {
+			// Online marker
+			jQuery(friend).removeClass('jm_offline').addClass('jm_online');
+			
+			// Check against search string
+			var search = jQuery('#jappix_mini div.jm_roster div.jm_search input.jm_searchbox').val();
+			var regex = new RegExp('((^)|( ))' + escapeRegex(search), 'gi');
+			var nick = unescape(jQuery(friend).data('nick'));
+			if(search && !nick.match(regex))
+				jQuery(friend).hide();
+			
+			// Enable the chat input
+			if(is_groupchat) {
+				jQuery(chat).removeClass('jm_disabled');
+				jQuery(send_input).removeAttr('disabled').val('');
+			}
+		}
+		
+		// Change the show presence of this buddy
+		jQuery(friend + ' span.jm_presence, ' + chat + ' span.jm_presence').attr('class', 'jm_presence jm_images jm_' + show);
+		
+		// Update the presence counter
+		updateRosterMini();
+		
+		logThis('Presence received from: ' + from);
+	} catch(e) {
+		logThis('Error on presence handler: ' + e, 1);
 	}
-	
-	// Change the show presence of this buddy
-	jQuery(friend + ' span.jm_presence, ' + chat + ' span.jm_presence').attr('class', 'jm_presence jm_images jm_' + show);
-	
-	// Update the presence counter
-	updateRosterMini();
-	
-	logThis('Presence received from: ' + from);
 }
 
 // Handles the MUC main elements
@@ -585,11 +645,11 @@ function handleMUCMini(pr) {
 	// Is it a valid server presence?
 	var valid = false;
 	
-	if(!resource || (resource == unescape(jQuery('#jappix_mini #chat-' + hash + '[data-type=groupchat]').attr('data-nick'))))
+	if(!resource || (resource == unescape(jQuery('#jappix_mini #chat-' + hash + '[data-type="groupchat"]').attr('data-nick'))))
 		valid = true;
 	
 	// Password required?
-	if(valid && jQuery(xml).find('error[type=auth] not-authorized').size()) {
+	if(valid && jQuery(xml).find('error[type="auth"] not-authorized').size()) {
 		// Create a new prompt
 		openPromptMini(printf(_e("This room (%s) is protected with a password."), room));
 		
@@ -620,7 +680,7 @@ function handleMUCMini(pr) {
 	}
 	
 	// Nickname conflict?
-	else if(valid && jQuery(xml).find('error[type=cancel] conflict').size()) {
+	else if(valid && jQuery(xml).find('error[type="cancel"] conflict').size()) {
 		// New nickname
 		var nickname = resource + '_';
 		
@@ -689,21 +749,26 @@ function sendMessageMini(aForm) {
 		if(body && xid) {
 			// Send the message
 			var aMsg = new JSJaCMessage();
-		
-			// if the roster does not give us any nick the user may have send us a nickname to use with his first message
-                        // @see http://xmpp.org/extensions/xep-0172.html
-			var known_roster_entry = jQuery("a.jm_friend[data-xid="+xid+"]",jQuery("#jappix_mini"));
-			if (0==known_roster_entry.length) {
-			        var subscription = known_roster_entry.attr('data-sub');
-			        // the other may not know my nickname if we do not have both a roster entry, or if he doesn't have one
-			        if ('both' != subscription && 'from' != subscription) {
-			                // Adding our nickname in the message, hard to know if this is just the first one
-			                aMsg.setNick(MINI_NICKNAME);
-			        }
+			
+			// If the roster does not give us any nick the user may have send us a nickname to use with his first message
+            // @see http://xmpp.org/extensions/xep-0172.html
+            var known_roster_entry = jQuery('#jappix_mini a.jm_friend[data-xid="' + xid + '"]');
+            
+			if(known_roster_entry.size() == 0) {
+		        var subscription = known_roster_entry.attr('data-sub');
+		        
+		        // The other may not know my nickname if we do not have both a roster entry, or if he doesn't have one
+		        if(('both' != subscription) && ('from' != subscription))
+	                aMsg.setNick(MINI_NICKNAME);
 			}
+			
+			// Message data
 			aMsg.setTo(xid);
 			aMsg.setType(type);
 			aMsg.setBody(body);
+			
+			// Chatstate
+			aMsg.appendNode('active', {'xmlns': NS_CHATSTATES});
 			
 			con.send(aMsg);
 			
@@ -1013,9 +1078,10 @@ function createMini(domain, user, password) {
 	// Create the DOM
 	jQuery('body').append('<div id="jappix_mini">' + dom + '</div>');
 	
-	// Hide the status picker panel
-	jQuery('#jappix_mini a.jm_status').removeClass('active');
+	// Hide the roster picker panels
+	jQuery('#jappix_mini a.jm_status.active, #jappix_mini a.jm_join.active').removeClass('active');
 	jQuery('#jappix_mini div.jm_status_picker').hide();
+	jQuery('#jappix_mini div.jm_chan_suggest').remove();
 	
 	// Adapt roster height
 	adaptRosterMini();
@@ -1025,7 +1091,8 @@ function createMini(domain, user, password) {
 	updateOverflowMini();
 	
 	// CSS refresh (Safari display bug when restoring old DOM)
-	jQuery('#jappix_mini div.jm_starter, #jappix_mini div.jm_conversations, #jappix_mini div.jm_conversation, #jappix_mini a.jm_switch').css('float', 'left');
+	jQuery('#jappix_mini div.jm_starter').css('float', 'right');
+	jQuery('#jappix_mini div.jm_conversations, #jappix_mini div.jm_conversation, #jappix_mini a.jm_switch').css('float', 'left');
 	
 	// The click events
 	jQuery('#jappix_mini a.jm_button').click(function() {
@@ -1069,10 +1136,13 @@ function createMini(domain, user, password) {
 	jQuery('#jappix_mini a.jm_status').click(function() {
 		// Using a try/catch override IE issues
 		try {
-			if(jQuery(this).hasClass('active')) {
+			var is_active = jQuery(this).hasClass('active');
+			jQuery('#jappix_mini div.jm_actions a').blur().removeClass('active');
+			
+			if(is_active) {
 				jQuery('#jappix_mini div.jm_status_picker').hide();
-				jQuery(this).blur().removeClass('active');
 			} else {
+				jQuery('#jappix_mini div.jm_chan_suggest').remove();
 				jQuery('#jappix_mini div.jm_status_picker').show();
 				jQuery(this).addClass('active');
 			}
@@ -1091,7 +1161,7 @@ function createMini(domain, user, password) {
 			// Generate an array of presence change XIDs
 			var pr_xid = [''];
 			
-			jQuery('#jappix_mini div.jm_conversation[data-type=groupchat]').each(function() {
+			jQuery('#jappix_mini div.jm_conversation[data-type="groupchat"]').each(function() {
 				pr_xid.push(jQuery(this).attr('data-xid'));
 			});
 			
@@ -1142,31 +1212,132 @@ function createMini(domain, user, password) {
 	jQuery('#jappix_mini div.jm_actions a.jm_join').click(function() {
 		// Using a try/catch override IE issues
 		try {
-			// Create a new prompt
-			openPromptMini(_e("Please enter the group chat address to join."));
-			
-			// When prompt submitted
-			jQuery('#jappix_popup div.jm_prompt form').submit(function() {
-				try {
-					// Read the value
-					var join_this = closePromptMini();
+			// Any suggested chat/groupchat?
+			if((MINI_SUGGEST_CHATS && MINI_SUGGEST_CHATS.length) || (MINI_SUGGEST_GROUPCHATS && MINI_SUGGEST_GROUPCHATS.length)) {
+				var is_active = jQuery(this).hasClass('active');
+				jQuery('#jappix_mini div.jm_actions a').blur().removeClass('active');
+				
+				if(is_active) {
+					jQuery('#jappix_mini div.jm_chan_suggest').remove();
+				} else {
+					// Button style
+					jQuery('#jappix_mini div.jm_status_picker').hide();
+					jQuery(this).addClass('active');
 					
-					// Any submitted chat to join?
-					if(join_this) {
-						// Get the chat room to join
-						chat_room = bareXID(generateXID(join_this, 'groupchat'));
+					// Generate selector code
+					var chans_html = '';
+					
+					// Generate the groupchat links HTML
+					for(var i = 0; i < MINI_SUGGEST_GROUPCHATS.length; i++) {
+						// Empty value?
+						if(!MINI_SUGGEST_GROUPCHATS[i])
+							continue;
 						
-						// Create a new groupchat
-						chatMini('groupchat', chat_room, getXIDNick(chat_room), hex_md5(chat_room));
+						// Using a try/catch override IE issues
+						try {
+							var chat_room = bareXID(generateXID(MINI_SUGGEST_GROUPCHATS[i], 'groupchat'));
+							var chat_pwd = MINI_SUGGEST_PASSWORDS[i] || '';
+							
+							chans_html += '<a class="jm_suggest_groupchat" href="#" data-xid="' + escape(chat_room) + '" data-pwd="' + escape(chat_pwd) + '">' + 
+								'<span class="jm_chan_icon jm_images"></span>' + 
+								'<span class="jm_chan_name">' + getXIDNick(chat_room).htmlEnc() + '</span>' + 
+							'</a>';
+						}
+						
+						catch(e) {}
 					}
+					
+					// Any separation space to add?
+					if(chans_html)
+						chans_html += '<div class="jm_space"></div>';
+					
+					// Generate the chat links HTML
+					for(var j = 0; j < MINI_SUGGEST_CHATS.length; j++) {
+						// Empty value?
+						if(!MINI_SUGGEST_CHATS[j])
+							continue;
+						
+						// Using a try/catch override IE issues
+						try {
+							// Read current chat values
+							var chat_xid = bareXID(generateXID(MINI_SUGGEST_CHATS[j], 'chat'));
+							var chat_hash = hex_md5(chat_xid);
+							var chat_nick = jQuery('#jappix_mini a#friend-' + chat_hash).attr('data-nick');
+							
+							// Get current chat nickname
+							if(!chat_nick)
+								chat_nick = getXIDNick(chat_xid);
+							else
+								chat_nick = unescape(chat_nick);
+							
+							// Generate HTML for current chat
+							chans_html += '<a class="jm_suggest_chat" href="#" data-xid="' + escape(chat_xid) + '">' + 
+								'<span class="jm_chan_icon jm_images"></span>' + 
+								'<span class="jm_chan_name">' + getXIDNick(chat_nick).htmlEnc() + '</span>' + 
+							'</a>';
+						}
+						
+						catch(e) {}
+					}
+					
+					// Any separation space to add?
+					if(chans_html)
+						chans_html += '<div class="jm_space"></div>';
+					
+					// Append selector code
+					jQuery('#jappix_mini div.jm_actions').append(
+						'<div class="jm_chan_suggest">' + 
+							chans_html + 
+							
+							'<a class="jm_suggest_prompt" href="#">' + 
+								'<span class="jm_chan_icon"></span>' + 
+								'<span class="jm_chan_name">' + _e("Other") + '</span>' + 
+							'</a>' + 
+						'</div>'
+					);
+					
+					// Click events
+					jQuery('#jappix_mini div.jm_chan_suggest a').click(function() {
+						// Using a try/catch override IE issues
+						try {
+							// Chat?
+							if(jQuery(this).is('.jm_suggest_chat')) {
+								var current_chat = unescape(jQuery(this).attr('data-xid'));
+								
+								chatMini('chat', current_chat, jQuery(this).find('span.jm_chan_name').text(), hex_md5(current_chat));
+							}
+							
+							// Groupchat?
+							else if(jQuery(this).is('.jm_suggest_groupchat')) {
+								var current_groupchat = unescape(jQuery(this).attr('data-xid'));
+								var current_password = jQuery(this).attr('data-pwd') || null;
+								
+								if(current_password)
+									current_password = unescape(current_password);
+								
+								chatMini('groupchat', current_groupchat, jQuery(this).find('span.jm_chan_name').text(), hex_md5(current_groupchat), current_password);
+							}
+							
+							// Default prompt?
+							else
+								groupchatPromptMini();
+						}
+						
+						catch(e) {}
+						
+						finally {
+							return false;
+						}
+					});
+					
+					// Adapt chan suggest height
+					adaptRosterMini();
 				}
-				
-				catch(e) {}
-				
-				finally {
-					return false;
-				}
-			});
+			}
+			
+			// Default action
+			else
+				groupchatPromptMini();
 		}
 		
 		catch(e) {}
@@ -1401,7 +1572,7 @@ function createMini(domain, user, password) {
 			);
 			
 			// IE6 makes the image blink when animated...
-			if(jQuery.browser.msie && ( parseInt(jQuery.browser.version) < 7 ) )
+			if((BrowserDetect.browser == 'Explorer') && (BrowserDetect.version < 7))
 				return;
 			
 			// Add timers
@@ -1502,7 +1673,7 @@ function displayMessageMini(type, body, xid, nick, hash, time, stamp, message_ty
 	if(grouped)
 		jQuery('#jappix_mini #chat-' + hash + ' div.jm_received-messages div.jm_group:last').append(body);
 	else
-		jQuery('#jappix_mini #chat-' + hash + ' div.jm_received-messages').append('<div class="jm_group jm_' + message_type + '" data-type="' + message_type + '" data-stamp="' + stamp + '">' + header + body + '</div>');
+		jQuery('#jappix_mini #chat-' + hash + ' div.jm_chatstate_typing').before('<div class="jm_group jm_' + message_type + '" data-type="' + message_type + '" data-stamp="' + stamp + '">' + header + body + '</div>');
 	
 	// Scroll to this message
 	if(can_scroll)
@@ -1568,7 +1739,7 @@ function openPromptMini(text, value) {
 	// Initialize
 	var prompt = '#jappix_popup div.jm_prompt';
 	var input = prompt + ' form input';
-	var value_input = input + '[type=text]';
+	var value_input = input + '[type="text"]';
 	
 	// Remove the existing prompt
 	closePromptMini();
@@ -1602,7 +1773,7 @@ function openPromptMini(text, value) {
 	});
 	
 	// Cancel event
-	jQuery(input + '[type=reset]').click(function() {
+	jQuery(input + '[type="reset"]').click(function() {
 		try {
 			closePromptMini();
 		}
@@ -1624,6 +1795,35 @@ function closePromptMini() {
 	jQuery('#jappix_popup').remove();
 	
 	return value;
+}
+
+// Opens the new groupchat prompt
+function groupchatPromptMini() {
+	// Create a new prompt
+	openPromptMini(_e("Please enter the group chat address to join."));
+	
+	// When prompt submitted
+	jQuery('#jappix_popup div.jm_prompt form').submit(function() {
+		try {
+			// Read the value
+			var join_this = closePromptMini();
+			
+			// Any submitted chat to join?
+			if(join_this) {
+				// Get the chat room to join
+				chat_room = bareXID(generateXID(join_this, 'groupchat'));
+				
+				// Create a new groupchat
+				chatMini('groupchat', chat_room, getXIDNick(chat_room), hex_md5(chat_room));
+			}
+		}
+		
+		catch(e) {}
+		
+		finally {
+			return false;
+		}
+	});
 }
 
 // Manages and creates a chat
@@ -1705,8 +1905,11 @@ function chatMini(type, xid, nick, hash, pwd, show_pane) {
 			html += '<a class="jm_one-action jm_close jm_images" title="' + _e("Close") + '" href="#"></a>';
 		
 		html += '</div>' + 
-			
-			'<div class="jm_received-messages" id="received-' + hash + '"></div>' + 
+				
+				'<div class="jm_received-messages" id="received-' + hash + '">' + 
+					'<div class="jm_chatstate_typing">' + printf(_e("%s is typing..."), nick.htmlEnc()) + '</div>' + 
+				'</div>' + 
+				
 				'<form action="#" method="post">' + 
 					'<input type="text" class="jm_send-messages" name="body" autocomplete="off" placeholder="' + _e("Chat") + '" data-value="" />' + 
 					'<input type="hidden" name="xid" value="' + xid + '" />' + 
@@ -1807,6 +2010,10 @@ function chatEventsMini(type, xid, hash) {
 	jQuery(current + ' a.jm_close').click(function() {
 		// Using a try/catch override IE issues
 		try {
+			// Gone chatstate
+			if(type != 'groupchat')
+				sendChatstateMini('gone', xid, hash);
+			
 			jQuery(current).remove();
 			
 			// Quit the groupchat?
@@ -1875,6 +2082,21 @@ function chatEventsMini(type, xid, hash) {
 			return false;
 		}
 	});
+	
+	// Focus/Blur events
+	jQuery('#jappix_mini #chat-' + hash + ' input.jm_send-messages').focus(function() {
+		// Store active chat
+		MINI_ACTIVE = hash;
+	})
+	
+	.blur(function() {
+		// Reset active chat
+		if(MINI_ACTIVE == hash)
+			MINI_ACTIVE = null;
+	});
+	
+	// Chatstate events
+	eventsChatstateMini(xid, hash, type);
 }
 
 // Opens the next chat
@@ -1917,8 +2139,8 @@ function showRosterMini() {
 
 // Hides the roster
 function hideRosterMini() {
-	// Close the status picker
-	jQuery('#jappix_mini a.jm_status.active').click();
+	// Close the roster pickers
+	jQuery('#jappix_mini a.jm_status.active, #jappix_mini a.jm_join.active').click();
 	
 	// Hide the roster box
 	jQuery('#jappix_mini div.jm_roster').hide();
@@ -1934,7 +2156,7 @@ function hideRosterMini() {
 // Removes a groupchat from DOM
 function removeGroupchatMini(xid) {
 	// Remove the groupchat private chats & the groupchat buddies from the roster
-	jQuery('#jappix_mini div.jm_conversation[data-origin=' + escape(cutResource(xid)) + '], #jappix_mini div.jm_roster div.jm_grouped[data-xid=' + escape(xid) + ']').remove();
+	jQuery('#jappix_mini div.jm_conversation[data-origin="' + escape(cutResource(xid)) + '"], #jappix_mini div.jm_roster div.jm_grouped[data-xid="' + escape(xid) + '"]').remove();
 	
 	// Update the presence counter
 	updateRosterMini();
@@ -2014,7 +2236,7 @@ function addBuddyMini(xid, hash, nick, groupchat, subscription) {
 	// Groupchat buddy
 	if(groupchat) {
 		// Generate the groupchat group path
-		path = '#jappix_mini div.jm_roster div.jm_grouped[data-xid=' + escape(groupchat) + ']';
+		path = '#jappix_mini div.jm_roster div.jm_grouped[data-xid="' + escape(groupchat) + '"]';
 		
 		// Must add a groupchat group?
 		if(!exists(path)) {
@@ -2092,7 +2314,7 @@ function removeBuddyMini(hash, groupchat) {
 	jQuery('#jappix_mini a.jm_friend#friend-' + hash).remove();
 	
 	// Empty group?
-	var group = '#jappix_mini div.jm_roster div.jm_grouped[data-xid=' + escape(groupchat) + ']';
+	var group = '#jappix_mini div.jm_roster div.jm_grouped[data-xid="' + escape(groupchat) + '"]';
 	
 	if(groupchat && !jQuery(group + ' a.jm_friend').size())
 		jQuery(group).remove();
@@ -2146,25 +2368,28 @@ function handleRosterMini(iq) {
 		i++;
 	});
 	
-    // Sort array and loop reverse
-    var buddies = buddies.sort();
-    var x = buddies.length;
-    var nick, hash, xid, subscription;
-    
-    for (var i=0;i<x; i++) {
-	if (!buddies[i]) continue;
-
-        nick = buddies[i][0];
-        hash = buddies[i][1];
-        xid = buddies[i][2];
-        subscription = buddies[i][3];
-    	
-    	if(subscription == 'remove')
+	// Sort array and loop reverse
+	var buddies = buddies.sort();
+	var x = buddies.length;
+	var nick, hash, xid, subscription;
+	
+	for(var i = 0; i < x; i++) {
+		if(!buddies[i])
+			continue;
+		
+		// Current buddy information
+		nick = buddies[i][0];
+		hash = buddies[i][1];
+		xid = buddies[i][2];
+		subscription = buddies[i][3];
+		
+		// Apply current buddy action
+		if(subscription == 'remove')
 			removeBuddyMini(hash);
-    	else
+		else
 			addBuddyMini(xid, hash, nick, null, subscription);
-    }
-    
+	}
+	
 	// Not yet initialized
 	if(!MINI_INITIALIZED)
 		initializeMini();
@@ -2174,11 +2399,13 @@ function handleRosterMini(iq) {
 
 // Adapts the roster height to the window
 function adaptRosterMini() {
-	// Process the new height
-	var height = jQuery(window).height() - 85;
+	// Adapt buddy list height
+	var roster_height = jQuery(window).height() - 85;
+	jQuery('#jappix_mini div.jm_roster div.jm_buddies').css('max-height', roster_height);
 	
-	// Apply the new height
-	jQuery('#jappix_mini div.jm_roster div.jm_buddies').css('max-height', height);
+	// Adapt chan suggest height
+	var suggest_height = jQuery('#jappix_mini div.jm_roster').height() - 46;
+	jQuery('#jappix_mini div.jm_chan_suggest').css('max-height', suggest_height);
 }
 
 // Generates a random nickname
@@ -2255,13 +2482,160 @@ function randomNickMini() {
 	return rand_nick;
 }
 
-//TypeWatch - don't search unless done typing
+// Sends a given chatstate to a given entity
+function sendChatstateMini(state, xid, hash) {
+	var user_type = jQuery('#jappix_mini #chat-' + hash).attr('data-type');
+	var user_storage = jQuery('#jappix_mini #chat-' + hash + ' input.jm_send-messages');
+	
+	// If the friend client supports chatstates and is online
+	if((user_type == 'groupchat') || ((user_type == 'chat') && user_storage.attr('data-chatstates') && !exists('#jappix_mini a#friend-' + hash + '.jm_offline'))) {
+		// Already sent?
+		if(user_storage.attr('data-chatstate') == state)
+			return;
+		
+		// Store the state
+		user_storage.attr('data-chatstate', state);
+		
+		// Send the state
+		var aMsg = new JSJaCMessage();
+		aMsg.setTo(xid);
+		aMsg.setType(user_type);
+		
+		aMsg.appendNode(state, {'xmlns': NS_CHATSTATES});
+		
+		con.send(aMsg);
+		
+		logThis('Sent ' + state + ' chatstate to ' + xid);
+	}
+}
+
+// Displays a given chatstate in a given chat
+function displayChatstateMini(state, xid, hash, type) {
+	// Groupchat not supported
+	if(type == 'groupchat')
+		return;
+	
+	// Composing?
+	if(state == 'composing')
+		jQuery('#jappix_mini #chat-' + hash + ' div.jm_chatstate_typing').css('visibility', 'visible');
+	else
+		resetChatstateMini(xid, hash, type);
+	
+	logThis('Received ' + state + ' chatstate from ' + xid);
+}
+
+// Resets the chatstate switcher marker
+function resetChatstateMini(xid, hash, type) {
+	// Groupchat not supported
+	if(type == 'groupchat')
+		return;
+	
+	jQuery('#jappix_mini #chat-' + hash + ' div.jm_chatstate_typing').css('visibility', 'hidden');
+}
+
+// Adds the chatstate events
+function eventsChatstateMini(xid, hash, type) {
+	// Groupchat not supported
+	if(type == 'groupchat')
+		return;
+	
+	jQuery('#jappix_mini #chat-' + hash + ' input.jm_send-messages').keyup(function(e) {
+		if(e.keyCode != 13) {
+			// Composing a message
+			if(jQuery(this).val() && (jQuery(this).attr('data-composing') != 'on')) {
+				// We change the state detect input
+				jQuery(this).attr('data-composing', 'on');
+				
+				// We send the friend a "composing" chatstate
+				sendChatstateMini('composing', xid, hash);
+			}
+			
+			// Stopped composing a message
+			else if(!jQuery(this).val() && (jQuery(this).attr('data-composing') == 'on')) {
+				// We change the state detect input
+				jQuery(this).attr('data-composing', 'off');
+				
+				// We send the friend an "active" chatstate
+				sendChatstateMini('active', xid, hash);
+			}
+		}
+	})
+	
+	.change(function() {
+		// Reset the composing database entry
+		jQuery(this).attr('data-composing', 'off');
+	})
+	
+	.focus(function() {
+		// Not needed
+		if(jQuery(this).is(':disabled'))
+			return;
+		
+		// Nothing in the input, user is active
+		if(!jQuery(this).val())
+			sendChatstateMini('active', xid, hash);
+		else
+			sendChatstateMini('composing', xid, hash);
+	})
+	
+	.blur(function() {
+		// Not needed
+		if(jQuery(this).is(':disabled'))
+			return;
+		
+		// Nothing in the input, user is inactive
+		if(!jQuery(this).val())
+			sendChatstateMini('inactive', xid, hash);
+		else
+			sendChatstateMini('paused', xid, hash);
+	});
+}
+
+// Plays a sound
+function soundPlayMini() {
+	try {
+		// Not supported!
+		if((BrowserDetect.browser == 'Explorer') && (BrowserDetect.version < 9))
+			return false;
+		
+		// Append the sound container
+		if(!exists('#jappix_mini #jm_audio')) {
+			jQuery('#jappix_mini').append(
+				'<div id="jm_audio">' + 
+					'<audio preload="auto">' + 
+						'<source src="' + JAPPIX_STATIC + 'snd/receive-message.mp3" />' + 
+						'<source src="' + JAPPIX_STATIC + 'snd/receive-message.oga" />' + 
+					'</audio>' + 
+				'</div>'
+			);
+		}
+		
+		// Play the sound
+		var audio_select = document.getElementById('jm_audio').getElementsByTagName('audio')[0];
+		
+		// Avoids Safari bug (2011 and less versions)
+		try {
+			audio_select.load();
+		} finally {
+			audio_select.play();
+		}
+	}
+	
+	catch(e) {}
+	
+	finally {
+		return false;
+	}
+}
+
+// TypeWatch to set a timeout to input value reading
 var typewatch = (function() {
-  var timer = 0;
-  return function(callback, ms) {
-    clearTimeout(timer);
-    timer = setTimeout(callback, ms);
-  }  
+	var timer = 0;
+	
+	return function(callback, ms) {
+	    clearTimeout(timer);
+	    timer = setTimeout(callback, ms);
+	}  
 })();
 
 // Plugin launcher
@@ -2303,7 +2677,7 @@ function launchMini(autoconnect, show_pane, domain, user, password) {
 	jQuery('head').append('<link rel="stylesheet" href="' + JAPPIX_STATIC + 'css/mini.css' + '" type="text/css" media="all" />');
 	
 	// Legacy IE stylesheet
-	if(jQuery.browser.msie && ( parseInt(jQuery.browser.version) < 7 ) )
+	if((BrowserDetect.browser == 'Explorer') && (BrowserDetect.version < 7))
 		jQuery('head').append('<link rel="stylesheet" href="' + JAPPIX_STATIC + 'css/mini-ie.css' + '" type="text/css" media="all" />');
 	
 	// Disables the browser HTTP-requests stopper
@@ -2322,7 +2696,7 @@ function launchMini(autoconnect, show_pane, domain, user, password) {
 	});
 	
 	// Logouts when Jappix is closed
-	if(jQuery.browser.opera) {
+	if(BrowserDetect.browser == 'Opera') {
 		// Emulates onbeforeunload on Opera (link clicked)
 		jQuery('a[href]:not([onclick])').click(function() {
 			// Link attributes
