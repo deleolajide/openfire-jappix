@@ -6,7 +6,7 @@ These are the PEP JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 26/08/11
 
 */
@@ -195,7 +195,7 @@ function displayPEP(xid, type) {
 		}
 		
 		// Apply the text to the buddy infos
-		var this_buddy = '#buddy-list .buddy[data-xid=' + escape(xid) + ']';
+		var this_buddy = '#buddy-list .buddy[data-xid="' + escape(xid) + '"]';
 		
 		if(exists(this_buddy))
 			$(this_buddy + ' .bi-' + type).replaceWith('<p class="bi-' + type + ' talk-images ' + fValue + '" title="' + encodeQuotes(dText) + '">' + fText + '</p>');

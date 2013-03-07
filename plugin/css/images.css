@@ -6,8 +6,8 @@ This is the images CSS stylesheet for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 16/01/12
+Author: Valérian Saliou
+Last revision: 22/08/12
 
 */
 
@@ -39,11 +39,6 @@ Last revision: 16/01/12
 
 .talk-images {
 	background-image: url(../img/sprites/talk.png);
-	background-repeat: no-repeat;
-}
-
-.voicechat-images {
-	background-image: url(../img/others/phone_call.png);
 	background-repeat: no-repeat;
 }
 
@@ -91,4 +86,11 @@ Last revision: 16/01/12
 	background-repeat: no-repeat;
 	height: 30px;
 	width: 30px;
+}
+
+.wait-typing {
+	background-image: url(../img/wait/wait-typing.gif);
+	background-repeat: no-repeat;
+	height: 4px;
+	width: 16px;
 }

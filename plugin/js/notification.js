@@ -6,7 +6,7 @@ These are the notification JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 12/02/12
 
 */
@@ -102,7 +102,7 @@ function newNotification(type, from, data, body, id, inverse) {
 			break;
 		
 		case 'send_accept':
-			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("has accepted to received your file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
+			text = '<b>' + getBuddyName(from).htmlEnc() + '</b> ' + printf(_e("has accepted to receive your file: “%s”.").htmlEnc(), '<em>' + truncate(body, 25).htmlEnc() + '</em>');
 			
 			break;
 		
@@ -314,12 +314,12 @@ function handleNotifications(iq) {
 	items.each(function() {
 		// Parse the current item
 		var current_item = $(this).attr('id');
-		var current_type = $(this).find('link[rel=via]:first').attr('title');
-		var current_href = $(this).find('link[rel=via]:first').attr('href');
-		var current_parent_href = $(this).find('link[rel=related]:first').attr('href');
+		var current_type = $(this).find('link[rel="via"]:first').attr('title');
+		var current_href = $(this).find('link[rel="via"]:first').attr('href');
+		var current_parent_href = $(this).find('link[rel="related]":first').attr('href');
 		var current_xid = explodeThis(':', $(this).find('source author uri').text(), 1);
 		var current_name = $(this).find('source author name').text();
-		var current_text = $(this).find('content[type=text]:first').text();
+		var current_text = $(this).find('content[type="text"]:first').text();
 		var current_bname = getBuddyName(current_xid);
 		var current_id = hex_md5(current_type + current_xid + current_href + current_text);
 		

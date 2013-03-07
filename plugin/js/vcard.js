@@ -6,8 +6,8 @@ These are the vCard JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 12/02/12
+Author: Valérian Saliou, Maranda
+Last revision: 20/02/12
 
 */
 
@@ -143,8 +143,13 @@ function closeVCard() {
 	destroyPopup('vcard');
 	
 	// Create the welcome end popup?
-	if(END_WELCOME)
+	if(END_WELCOME) {
+		// Open popup
 		openMe();
+		
+		// Unavoidable popup
+		$('#me').addClass('unavoidable');
+	}
 	
 	return false;
 }
@@ -154,7 +159,7 @@ function switchVCard(id) {
 	$('#vcard .one-lap').removeClass('lap-active');
 	$('#vcard #lap' + id).addClass('lap-active');
 	$('#vcard .tab a').removeClass('tab-active');
-	$('#vcard .tab a[data-key=' + id + ']').addClass('tab-active');
+	$('#vcard .tab a[data-key="' + id + '"]').addClass('tab-active');
 	
 	return false;
 }
@@ -174,7 +179,7 @@ function handleAvatarUpload(responseXML) {
 	var dData = $(responseXML).find('jappix');
 	
 	// Not current upload session?
-	if(parseInt(dData.attr('id')) != parseInt($('#vcard-avatar input[name=id]').val()))
+	if(parseInt(dData.attr('id')) != parseInt($('#vcard-avatar input[name="id"]').val()))
 		return;
 	
 	// Reset the avatar info
@@ -302,8 +307,8 @@ function handleVCard(iq, type) {
 	var iqNode = iq.getNode();
 	
 	// Define some paths
-	var path_vCard = '#vcard[data-vcard=' + iqID + ']';
-	var path_userInfos = '#userinfos[data-vcard=' + iqID + ']';
+	var path_vCard = '#vcard[data-vcard="' + iqID + '"]';
+	var path_userInfos = '#userinfos[data-vcard="' + iqID + '"]';
 	
 	// End if the session does not exist
 	if(((type == 'user') && !exists(path_vCard)) || ((type == 'buddy') && !exists(path_userInfos)))
@@ -391,12 +396,12 @@ function handleVCard(iq, type) {
 	// Update the stored avatar
 	if(type == 'buddy') {
 		// Get the avatar XML
-		var xml = getPersistent('avatar', iqFrom);
+		var xml = getPersistent('global', 'avatar', iqFrom);
 		
 		// If there were no stored avatar previously
 		if($(XMLFromString(xml)).find('type').text() == 'none') {
 			xml = xml.replace(/<forced>false<\/forced>/gi, '<forced>true</forced>');
-			setPersistent('avatar', iqFrom, xml);
+			setPersistent(getXID(), 'avatar', iqFrom, xml);
 		}
 		
 		// Handle the user avatar
@@ -574,7 +579,7 @@ function launchVCard() {
 	});
 	
 	// Keyboard events
-	$('#vcard input[type=text]').keyup(function(e) {
+	$('#vcard input[type="text"]').keyup(function(e) {
 		// Enter pressed: send the vCard
 		if((e.keyCode == 13) && !$('#vcard .finish.save').hasClass('disabled'))
 			return sendVCard();
@@ -614,14 +619,14 @@ function launchVCard() {
 	
 	// Avatar upload form submit event
 	$('#vcard-avatar').submit(function() {
-		if($('#vcard .wait').is(':hidden') && $('#vcard .avatar-info.avatar-wait').is(':hidden') && $('#vcard-avatar input[type=file]').val())
+		if($('#vcard .wait').is(':hidden') && $('#vcard .avatar-info.avatar-wait').is(':hidden') && $('#vcard-avatar input[type="file"]').val())
 			$(this).ajaxSubmit(avatar_options);
 		
 		return false;
 	});
 	
 	// Avatar upload input change event
-	$('#vcard-avatar input[type=file]').change(function() {
+	$('#vcard-avatar input[type="file"]').change(function() {
 		if($('#vcard .wait').is(':hidden') && $('#vcard .avatar-info.avatar-wait').is(':hidden') && $(this).val())
 			$('#vcard-avatar').ajaxSubmit(avatar_options);
 		
@@ -629,5 +634,6 @@ function launchVCard() {
 	});
 	
 	// Placeholders
-	$('#vcard-avatar input[type=text]').placeholder();
+	$('#vcard-avatar input[type="text"]').placeholder();
 }
+

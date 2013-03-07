@@ -8,7 +8,7 @@ This is the file get script
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 03/12/11
 
 */
@@ -29,15 +29,10 @@ hideErrors();
 $is_developer = isDeveloper();
 $has_compression = hasCompression();
 
+// Cache control (for development & production)
 if($is_developer) {
 	header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-	header('Cache-Control: no-store, no-cache, must-revalidate');
-	header('Cache-Control: post-check=0, pre-check=0', false);
-	header('Pragma: no-cache');
-}
-
-// Else, we put a far away cache date (1 year)
-else {
+} else {
 	$expires = 31536000;
 	header('Pragma: public');
 	header('Cache-Control: maxage='.$expires);
@@ -49,7 +44,7 @@ $type = '';
 $file = '';
 
 // Read the type var
-if(isset($_GET['t']) && !empty($_GET['t']) && preg_match('/^(css|js|img|snd|store)$/', $_GET['t']))
+if(isset($_GET['t']) && !empty($_GET['t']) && preg_match('/^(css|js|img|snd|fonts|store)$/', $_GET['t']))
 	$type = $_GET['t'];
 
 // Read the files var
@@ -98,6 +93,7 @@ if($file && $type) {
 			// Audio file
 			case 'ogg':
 			case 'oga':
+			case 'mp3':
 				$type = 'snd';
 				
 				break;
@@ -109,6 +105,15 @@ if($file && $type) {
 			case 'gif':
 			case 'bmp':
 				$type = 'img';
+				
+				break;
+			
+			// Image file
+			case 'woff':
+			case 'ttf':
+			case 'eot':
+			case 'svg':
+				$type = 'fonts';
 				
 				break;
 		}
@@ -195,6 +200,7 @@ if($file && $type) {
 				header('Content-Type: application/javascript; charset=utf-8');
 		}
 		
+		// Images
 		else if($mime == 'png')
 			header('Content-Type: image/png');
 		else if($mime == 'gif')
@@ -203,8 +209,22 @@ if($file && $type) {
 			header('Content-Type: image/jpeg');
 		else if($mime == 'bmp')
 			header('Content-Type: image/bmp');
+		
+		// Sounds
 		else if(($mime == 'oga') || ($mime == 'ogg'))
 			header('Content-Type: audio/ogg');
+		else if($mime == 'mp3')
+			header('Content-Type: audio/mpeg');
+		
+		// Fonts
+		else if($mime == 'woff')
+			header('Content-Type: application/x-font-woff');
+		else if($mime == 'ttf')
+			header('Content-Type: application/x-font-ttf');
+		else if($mime == 'eot')
+			header('Content-Type: application/vnd.ms-fontobject');
+		else if($mime == 'svg')
+			header('Content-Type: image/svg+xml');
 		
 		// Catch the file MIME type
 		else

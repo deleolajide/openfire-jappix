@@ -6,8 +6,8 @@ These are the CAPS JS script for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 10/04/12
+Author: Valérian Saliou, Maranda
+Last revision: 20/02/13
 
 */
 
@@ -79,7 +79,7 @@ function getDiscoInfos(to, caps) {
 	}
 	
 	// Get the stored disco infos
-	var xml = XMLFromString(getPersistent('caps', caps));
+	var xml = XMLFromString(getPersistent('global', 'caps', caps));
 	
 	// Yet stored
 	if(xml) {
@@ -147,13 +147,13 @@ function handleDiscoInfos(iq) {
 	});
 	
 	// Data-form values
-	$(query).find('x[xmlns=' + NS_XDATA + ']').each(function() {
+	$(query).find('x[xmlns="' + NS_XDATA + '"]').each(function() {
 		// Initialize some stuffs
 		var pString = '';
 		var sortVar = new Array();
 		
 		// Add the form type field
-		$(this).find('field[var=FORM_TYPE] value').each(function() {
+		$(this).find('field[var="FORM_TYPE"] value').each(function() {
 			var cText = $(this).text();
 			
 			if(cText)
@@ -161,7 +161,7 @@ function handleDiscoInfos(iq) {
 		});
 		
 		// Add the var attributes into an array
-		$(this).find('field:not([var=FORM_TYPE])').each(function() {
+		$(this).find('field:not([var="FORM_TYPE"])').each(function() {
 			var cVar = $(this).attr('var');
 			
 			if(cVar)
@@ -210,7 +210,7 @@ function handleDiscoInfos(iq) {
 	var xml = xmlToString(query);
 	
 	// Store the disco infos
-	setPersistent('caps', caps, xml);
+	setPersistent('global', 'caps', caps, xml);
 	
 	// This is our server
 	if(from == getServer()) {
@@ -349,3 +349,4 @@ function processCaps(cIdentities, cFeatures, cDataForms) {
 function myCaps() {
 	return processCaps(new Array('client/web//Jappix'), myDiscoInfos(), new Array());
 }
+

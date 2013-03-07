@@ -46,5 +46,5 @@ define('HOST_BOSH_MAIN', '');
 define('HOST_BOSH_MINI', '');
 define('HOST_STATIC', '');
 define('HOST_UPLOAD', '');
-
+define('BOSH_PROXY', '');
 ?>

@@ -18,7 +18,7 @@ WebRtcJingle = function()
 	this.farParty = null;
 	this.username = null;
 	this.interval = null;
-	this.initiator = false;
+	this.inviter = false;
 	this.started = false;
 	this.stunServer = null
 	this.connection = null;
@@ -82,7 +82,12 @@ WebRtcJingle.prototype.onMessage = function(jingle)
 	
 	if (jingle.nodeName == "jingle" && jingle.getAttribute("action") != "session-terminate")
 	{
-		var sdp = this.getSdpFromJingle(jingle);
+		if (jingle.getElementsByTagName("webrtc").length > 0)
+		
+			var sdp = jingle.getElementsByTagName("webrtc")[0].firstChild.data;
+		else
+			var sdp = this.getSdpFromJingle(jingle);
+		
 		
 		if (this.pc == null)
 		{
@@ -91,12 +96,12 @@ WebRtcJingle.prototype.onMessage = function(jingle)
 		
 		if (jingle.getAttribute("action") == "session-initiate")
 		{
-			this.initiator = false;			
+			this.inviter= false;			
 			this.remoteOffer = new SessionDescription(sdp);
 
 		} else {
 
-			this.initiator = true;
+			this.inviter= true;
 
 			var answer = new SessionDescription(sdp);
 			this.pc.setRemoteDescription(this.pc.SDP_ANSWER, answer);
@@ -133,7 +138,7 @@ WebRtcJingle.prototype.jingleInitiate = function(farParty, hidef)
 	this.farParty = farParty;
 	this.hidef = hidef;
 	
-	this.initiator = true;
+	this.inviter = true;
 	this.started = false;	
 	
 	this.createPeerConnection();
@@ -208,7 +213,7 @@ WebRtcJingle.prototype.onRemoteStreamAdded = function (event)
 	console.log("onRemoteStreamAdded " + url);
 	console.log(event);
 	
-	if (this.initiator == false)
+	if (this.inviter == false)
 	{
 		this.localOffer = this.pc.createAnswer(this.remoteOffer.toSdp(), {has_audio: true, has_video: false});
 		this.pc.setLocalDescription(this.pc.SDP_ANSWER, this.localOffer);
@@ -310,7 +315,7 @@ WebRtcJingle.prototype.sendJingleIQ = function(sdp)
 	console.log("sendJingleIQ");
 	console.log(sdp);
 
-	var action = this.initiator ? "session-initiate" : "session-accept";
+	var action = this.inviter? "session-initiate" : "session-accept";
 
 	this.sid 	= this.getToken(sdp, "o=- ", " ");
 
@@ -360,7 +365,8 @@ WebRtcJingle.prototype.sendJingleIQ = function(sdp)
 	iq += "		<candidate ip='" + ipaddr + "' port='" + port + "' generation='0' />";
 	iq += "	</transport>";
 	iq += "</content>";
-	iq += "</jingle></iq>";
+	iq += "<webrtc xmlns='http://webrtc.org'>" + sdp + "</webrtc>";
+	iq += "</jingle></iq>";	
 
 	//console.log(iq);
 	this.callback.sendPacket(iq);

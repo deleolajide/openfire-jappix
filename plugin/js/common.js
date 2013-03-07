@@ -6,8 +6,8 @@ These are the common JS script for Jappix
 -------------------------------------------------
 
 License: dual-licensed under AGPL and MPLv2
-Authors: Vanaryon, olivierm, regilero
-Last revision: 09/04/12
+Authors: Valérian Saliou, olivierm, regilero, Maranda
+Last revision: 24/09/12
 
 */
 
@@ -44,13 +44,16 @@ function isFocused() {
 // Generates the good XID
 function generateXID(xid, type) {
 	// XID needs to be transformed
+	// .. and made lowercase (uncertain though this is the right place...)
+	xid = xid.toLowerCase();
+
 	if(xid && (xid.indexOf('@') == -1)) {
 		// Groupchat
 		if(type == 'groupchat')
 			return xid + '@' + HOST_MUC;
 		
 		// One-to-one chat
-		if(xid.indexOf('@') == -1)
+		if(xid.indexOf('.') == -1)
 			return xid + '@' + HOST_MAIN;
 		
 		// It might be a gateway?
@@ -120,7 +123,7 @@ function thisResource(aXID) {
 // Does stringprep on a string
 function stringPrep(string) {
 	// Replacement arrays
-	var invalid = new Array('Š', 'š', '?', '?', 'Ž', 'ž', '?', '?', '?', '?', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Þ', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ý', 'þ', 'ÿ', '?', '?');
+	var invalid = new Array('Š', 'š', 'Đ', 'đ', 'Ž', 'ž', 'Č', 'č', 'Ć', 'ć', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Þ', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ý', 'þ', 'ÿ', 'Ŕ', 'ŕ');
 	
 	var valid   = new Array('S', 's', 'Dj', 'dj', 'Z', 'z', 'C', 'c', 'C', 'c', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'B', 'Ss', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'y', 'b', 'y', 'R', 'r');
 	
@@ -166,6 +169,10 @@ function fullXID(xid) {
 
 // Gets the nick from a XID
 function getXIDNick(aXID) {
+	// Gateway nick?
+	if(aXID.match(/\\40/))
+		return explodeThis('\\40', aXID, 0);
+	
 	return explodeThis('@', aXID, 0);
 }
 

@@ -6,7 +6,7 @@ These are the welcome tool functions for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 16/01/12
 
 */
@@ -81,7 +81,7 @@ function openWelcome() {
 		'<div class="one-lap welcome3">' + 
 			'<div class="infos">' + 
 				'<p class="infos-title">' + _e("Share") + '</p>' + 
-				'<p>' + _e("Great work! Now, you can share Jappix with your friends!") + '</p>' + 
+				'<p>' + _e("Good job! Now, you can share Jappix with your friends!") + '</p>' + 
 				'<p>' + _e("When you will press the save button, the profile editor will be opened. Happy socializing!") + '</p>' + 
 			'</div>' + 
 			
@@ -125,6 +125,9 @@ function openWelcome() {
 	// Create the popup
 	createPopup('welcome', html);
 	
+	// Unavoidable popup
+	$('#welcome').addClass('unavoidable');
+	
 	// Apply the features
 	applyFeatures('welcome');
 	
@@ -153,7 +156,7 @@ function switchWelcome(id) {
 	$(content + 'one-lap').hide();
 	$(content + 'welcome' + id).show();
 	$(tab + 'a').removeClass('tab-active');
-	$(tab + 'a[data-step=' + id + ']').addClass('tab-active').removeClass('tab-missing');
+	$(tab + 'a[data-step="' + id + '"]').addClass('tab-active').removeClass('tab-missing');
 	
 	// Update the "save" button if all is okay
 	if(!exists(tab + '.tab-missing')) {
@@ -248,6 +251,9 @@ function saveWelcome() {
 	
 	// Open the profile editor
 	openVCard();
+	
+	// Unavoidable popup
+	$('#vcard').addClass('unavoidable');
 	
 	END_WELCOME = true;
 	

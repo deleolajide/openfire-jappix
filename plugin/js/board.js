@@ -6,8 +6,8 @@ These are the notification board JS script for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 12/03/11
+Author: Valérian Saliou, Maranda
+Last revision: 20/02/13
 
 */
 
@@ -39,13 +39,13 @@ function createBoard(type, id) {
 			
 			// Groupchat join
 			case 4:
-				text = _e("The room you joined seems not to exist. You should create it!");
+				text = _e("The room you tried to join doesn't seem to exist.");
 				
 				break;
 			
 			// Groupchat removal
 			case 5:
-				text = _e("The groupchat has been removed, now someone else will be able to recreate it.");
+				text = _e("The groupchat has been removed.");
 				
 				break;
 			
@@ -94,7 +94,7 @@ function createBoard(type, id) {
 	$('#board').append('<div class="one-board ' + type + '" data-id="' + id + '">' + text + '</div>');
 	
 	// Events (click and auto-hide)
-	$('#board .one-board.' + type + '[data-id=' + id + ']')
+	$('#board .one-board.' + type + '[data-id="' + id + '"]')
 	
 	.click(function() {
 		closeThisBoard(this);
@@ -139,3 +139,88 @@ function closeThisBoard(board) {
 		$(this).remove();
 	});
 }
+
+// Creates a quick board (HTML5 notification)
+function quickBoard(xid, type, content, title, icon) {
+	// Cannot process?
+	if(isFocused() || !content || !window.webkitNotifications)
+		return;
+	
+	// Default icon?
+	if(!icon) {
+		icon = './img/others/default-avatar.png';
+		
+		// Avatar icon?
+		if(xid) {
+			var avatar_xml = XMLFromString(getPersistent('global', 'avatar', xid));
+			var avatar_type = $(avatar_xml).find('type').text() || 'image/png';
+			var avatar_binval = $(avatar_xml).find('binval').text();
+			
+			if(avatar_binval && avatar_type)
+				icon = 'data:' + avatar_type + ';base64,' + avatar_binval;
+		}
+	}
+	
+	// Default title?
+	if(!title)
+		title = _e("New event!");
+	
+	// Check for notification permission
+	if(window.webkitNotifications.checkPermission() == 0) {
+		// Create notification
+		var notification = window.webkitNotifications.createNotification(icon, title, content);
+		
+		// Auto-hide after a while
+		notification.ondisplay = function(event) {
+			setTimeout(function() {
+				event.currentTarget.cancel();
+			}, 10000);
+		};
+		
+		// Click event
+		notification.onclick = function() {
+			// Click action?
+			switch(type) {
+				case 'chat':
+					switchChan(hex_md5(xid));
+					break;
+				
+				case 'groupchat':
+					switchChan(hex_md5(bareXID(xid)));
+					break;
+				
+				default:
+					break;
+			}
+			
+			// Focus on msg-me
+			window.focus();
+			
+			// Remove notification
+			this.cancel();
+		};
+		
+		// Show notification
+		notification.show();
+		
+		return notification;
+	
+	}
+}
+
+// Asks for permission to show quick boards (HTML5 notification)
+function quickBoardPermission() {
+	if(!window.webkitNotifications || (window.webkitNotifications.checkPermission() == 0))
+		return;
+	
+	// Ask for permission
+	window.webkitNotifications.requestPermission();
+}
+
+// Fires quickBoardPermission() on document click
+$(document).click(function() {
+	// Ask for permission to use quick boards
+	if((typeof con != 'undefined') && con.connected())
+		quickBoardPermission();
+});
+

@@ -6,7 +6,7 @@ These are the presence JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 21/06/12
 
 */
@@ -75,11 +75,6 @@ function handlePresence(presence) {
 	var xid = bareXID(from);
 	var xidHash = hex_md5(xid);
 	
-	// Jingle Full JIDs BAO
-	
-	_fullJingleJis[xidHash] = from;
-	
-	
 	// We get the type content
 	var type = presence.getType();
 	if(!type)
@@ -101,7 +96,7 @@ function handlePresence(presence) {
 		status = '';
 	
 	// We get the photo content
-	var photo = $(node).find('x[xmlns=' + NS_VCARD_P + ']:first photo');
+	var photo = $(node).find('x[xmlns="' + NS_VCARD_P + '"]:first photo');
 	var checksum = photo.text();
 	var hasPhoto = photo.size();
 	
@@ -111,7 +106,7 @@ function handlePresence(presence) {
 		hasPhoto = 'false';
 	
 	// We get the CAPS content
-	var caps = $(node).find('c[xmlns=' + NS_CAPS + ']:first').attr('ver');
+	var caps = $(node).find('c[xmlns="' + NS_CAPS + '"]:first').attr('ver');
 	if(!caps || (type == 'error'))
 		caps = '';
 	
@@ -121,7 +116,7 @@ function handlePresence(presence) {
 	
 	// This presence comes from a groupchat
 	if(isPrivate(xid)) {
-		var x_muc = $(node).find('x[xmlns=' + NS_MUC_USER + ']:first');
+		var x_muc = $(node).find('x[xmlns="' + NS_MUC_USER + '"]:first');
 		var item = x_muc.find('item');
 		var affiliation = item.attr('affiliation');
 		var role = item.attr('role');
@@ -140,7 +135,7 @@ function handlePresence(presence) {
 		});
 		
 		// If this is an initial presence (when user join the room)
-		if(exists('#' + xidHash + '[data-initial=true]'))
+		if(exists('#' + xidHash + '[data-initial="true"]'))
 			notInitial = false;
 		
 		// If one user is quitting
@@ -181,13 +176,13 @@ function handlePresence(presence) {
 		// Subscribe stanza
 		else if(type == 'subscribe') {
 			// This is a buddy we can safely authorize, because we added him to our roster
-			if(exists('#buddy-list .buddy[data-xid=' + escape(xid) + ']'))
+			if(exists('#buddy-list .buddy[data-xid="' + escape(xid) + '"]'))
 				acceptSubscribe(xid);
 			
 			// We do not know this entity, we'd be better ask the user
 			else {
 				// Get the nickname
-				var nickname = $(node).find('nick[xmlns=' + NS_NICK + ']:first').text();
+				var nickname = $(node).find('nick[xmlns="' + NS_NICK + '"]:first').text();
 				
 				// New notification
 				newNotification('subscribe', xid, [xid, nickname], status);
@@ -301,7 +296,7 @@ function displayMucPresence(from, roomHash, hash, type, show, status, affiliatio
 		
 		// Click event
 		if(nick != getMUCNick(roomHash))
-			$(thisUser).live('click', function() {
+			$(thisUser).on('click', function() {
 				checkChatCreate(from, 'private');
 			});
 		
@@ -367,7 +362,7 @@ function displayMucPresence(from, roomHash, hash, type, show, status, affiliatio
 				new_class += ' myself';
 			
 			// Die the click event
-			$(thisUser).die('click');
+			$(thisUser).off('click');
 			
 			// Change to the new nickname
 			$(thisUser).attr('data-nick', escape(iNick))
@@ -378,7 +373,7 @@ function displayMucPresence(from, roomHash, hash, type, show, status, affiliatio
 			$(thisUser).attr('class', new_class);
 			
 			// New click event
-			$('#page-engine #' + roomHash + ' .list .' + new_hash).live('click', function() {
+			$('#page-engine #' + roomHash + ' .list .' + new_hash).on('click', function() {
 				checkChatCreate(new_xid, 'private');
 			});
 		}
@@ -819,7 +814,7 @@ function presenceSend(checksum, autoidle) {
 		setDB('presence-show', 1, show);
 	
 	// We send the presence to our active MUC
-	$('.page-engine-chan[data-type=groupchat]').each(function() {
+	$('.page-engine-chan[data-type="groupchat"]').each(function() {
 		var tmp_nick = $(this).attr('data-nick');
 		
 		if(!tmp_nick)
@@ -955,17 +950,17 @@ function liveIdle() {
 	$('#my-infos .f-presence').everyTime('30s', autoIdle);
 	
 	// On body bind (click & key event)
-	$('body').live('mousedown', eventIdle)
-		 .live('mousemove', eventIdle)
-		 .live('keydown', eventIdle);
+	$('body').on('mousedown', eventIdle)
+	         .on('mousemove', eventIdle)
+	         .on('keydown', eventIdle);
 }
 
 // Kills the auto idle functions
 function dieIdle() {
 	// Remove the event detector
-	$('body').die('mousedown', eventIdle)
-		 .die('mousemove', eventIdle)
-		 .die('keydown', eventIdle);
+	$('body').off('mousedown', eventIdle)
+	         .off('mousemove', eventIdle)
+	         .off('keydown', eventIdle);
 }
 
 // Gets the user presence show

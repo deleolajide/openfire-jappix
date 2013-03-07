@@ -6,7 +6,7 @@ These are the talkpage JS scripts for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 06/05/11
 
 */
@@ -41,9 +41,9 @@ function createTalkPage() {
 				
 				if(!anonymous) html += 
 				'<a href="#" onclick="return openInbox();" class="inbox-hidable">' + _e("Messages") +  '</a>' + 
-				'<a href="#" onclick="return openVCard();">' + _e("Profile") +  '</a>' + 
+				'<a href="#" onclick="return openVCard();" class="vcard">' + _e("Profile") +  '</a>' + 
 				'<a href="#" onclick="return optionsOpen();" class="options-hidable">' + _e("Options") +  '</a>' + 
-				'<a href="#" onclick="return normalQuit();">' + _e("Disconnect") +  '</a>';
+				'<a href="#" onclick="return normalQuit();" class="quit">' + _e("Disconnect") +  '</a>';
 				
 				else html +=
 				'<a href="./">' + _e("Disconnect") +  '</a>';
@@ -247,6 +247,7 @@ function destroyTalkPage() {
 	FIRST_PRESENCE_SENT = false;
 	SEARCH_FILTERED = false;
 	AVATAR_PENDING = [];
+	JOIN_SUGGEST = [];
 	
 	// Kill all timers, exept the board ones
 	$('*:not(#board .one-board)').stopTime();

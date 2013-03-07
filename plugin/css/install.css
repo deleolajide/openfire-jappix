@@ -6,7 +6,7 @@ This is the install CSS stylesheet for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 08/06/11
 
 */
@@ -67,9 +67,9 @@ body {
 	margin-bottom: 5px;
 }
 
-#install input[type=text],
-#install input[type=url],
-#install input[type=password] {
+#install input[type="text"],
+#install input[type="url"],
+#install input[type="password"] {
 	margin-top: -2px;
 	padding: 3px;
 	font-size: 0.95em;

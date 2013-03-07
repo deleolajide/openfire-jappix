@@ -6,7 +6,7 @@ These are the error functions for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 02/04/11
 
 */
@@ -38,7 +38,7 @@ function showError(condition, reason, type) {
 		openThisError(1);
 		
 		// Create the error text
-		$('#board .one-board.error[data-id=1] span').text(eText);
+		$('#board .one-board.error[data-id="1"] span').text(eText);
 	}
 	
 	// Not enough data to output the error: output a generic board
@@ -49,7 +49,7 @@ function showError(condition, reason, type) {
 // Handles the error from a packet and return true if any error
 function handleError(packet) {
 	/* REF: http://xmpp.org/extensions/xep-0086.html */
-
+	
 	// Initialize
 	var type, code, reason, condition;
 	var node = $(packet);

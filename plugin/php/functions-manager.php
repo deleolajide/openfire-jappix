@@ -8,7 +8,7 @@ These are the PHP functions for Jappix manager
 -------------------------------------------------
 
 License: AGPL
-Authors: Vanaryon, Mathieui, olivierm, Vinilox, regilero, Cyril "Kyriog" Glapa
+Authors: Valérian Saliou, Mathieui, olivierm, Vinilox, regilero, Cyril "Kyriog" Glapa
 Last revision: 27/02/12
 
 */
@@ -626,46 +626,6 @@ function browseFolder($folder, $mode) {
 			$marker = 'even';
 		else
 			$marker = 'odd';
-	}
-	
-	return true;
-}
-
-function browseXmlFolder($folder) {
-	// Scan the target directory
-	$directory = JAPPIX_BASE.'/store/'.$folder;
-	$scan      = scandir($directory);
-	$scan      = array_diff($scan, array('.', '..', '.svn', 'index.html'));
-	
-	// Odd/even marker
-	$marker = 'odd';
-	
-	// Empty or non-existing directory?
-	if(!count($scan)) {
-		echo('<div class="one-browse '.$marker.' alert manager-images">'.T_("The folder is empty.").'</div>');
-		
-		return false;
-	}
-	
-	// Echo the browsing HTML code
-	foreach($scan as $current) {
-		// If it's not a XML file, we continue the scan
-		if(substr($current, -4) != '.xml')
-			continue;
-		
-		$xml = new SimpleXMLElement($directory.'/'.$current, 0, true);
-		
-		$filehash = substr($current, 0, -4);
-		$filename = $xml->name;
-		$fkey     = $xml->keys->key[0];
-		
-		$type = getFileType(getFileExt($filename));
-		$href = JAPPIX_BASE.'/?m=download&file='.$filehash.'&key='.$fkey;
-		
-		echo('<div class="one-browse '.$marker.' '.$type.' manager-images"><a href="'.$href.'">'.$filename.'</a><input type="checkbox" name="element_'.$filehash.'" value="'.$folder.'/'.$current.'" /></div>');
-		
-		// Change the marker
-		$marker = ($marker == 'odd') ? 'even' : 'odd';
 	}
 	
 	return true;

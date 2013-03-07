@@ -8,7 +8,7 @@ These are the hosts configuration variables
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
+Author: Valérian Saliou
 Last revision: 27/05/11
 
 */
@@ -28,5 +28,6 @@ $host_bosh_main = htmlspecialchars(HOST_BOSH_MAIN);
 $host_bosh_mini = htmlspecialchars(HOST_BOSH_MINI);
 $host_static = htmlspecialchars(HOST_STATIC);
 $host_upload = htmlspecialchars(HOST_UPLOAD);
+$bosh_proxy = htmlspecialchars(BOSH_PROXY);
 
 ?>

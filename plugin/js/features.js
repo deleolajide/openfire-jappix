@@ -6,8 +6,8 @@ This is the server features JS script for Jappix
 -------------------------------------------------
 
 License: AGPL
-Author: Vanaryon
-Last revision: 01/06/11
+Author: Valérian Saliou, Maranda
+Last revision: 20/02/13
 
 */
 
@@ -22,7 +22,7 @@ function getFeatures() {
 	
 	// Try to get the stored data
 	if(caps)
-		xml = XMLFromString(getPersistent('caps', caps));
+		xml = XMLFromString(getPersistent('global', 'caps', caps));
 	
 	// Any stored data?
 	if(xml) {
@@ -61,21 +61,21 @@ function handleFeatures(xml) {
 	var commands = false;
 	
 	// Scan the features
-	if(selector.find('identity[category=pubsub][type=pep]').size())
+	if(selector.find('identity[category="pubsub"][type="pep"]').size())
 		pep = true;
-	if(selector.find('feature[var=' + NS_PUBSUB + ']').size())
+	if(selector.find('feature[var="' + NS_PUBSUB + '"]').size())
 		pubsub = true;
-	if(selector.find('feature[var=' + NS_URN_ARCHIVE + ']').size())
+	if(selector.find('feature[var="' + NS_URN_ARCHIVE + '"]').size())
 		archive = true;
-	if(selector.find('feature[var=' + NS_URN_AR_AUTO + ']').size())
+	if(selector.find('feature[var="' + NS_URN_AR_AUTO + '"]').size())
 		archive_auto = true;
-	if(selector.find('feature[var=' + NS_URN_AR_MANUAL + ']').size())
+	if(selector.find('feature[var="' + NS_URN_AR_MANUAL + '"]').size())
 		archive_manual = true;
-	if(selector.find('feature[var=' + NS_URN_AR_MANAGE + ']').size())
+	if(selector.find('feature[var="' + NS_URN_AR_MANAGE + '"]').size())
 		archive_manage = true;
-	if(selector.find('feature[var=' + NS_URN_AR_PREF + ']').size())
+	if(selector.find('feature[var="' + NS_URN_AR_PREF + '"]').size())
 		archive_pref = true;
-	if(selector.find('feature[var=' + NS_COMMANDS + ']').size())
+	if(selector.find('feature[var="' + NS_COMMANDS + '"]').size())
 		commands = true;
 	
 	// Enable the pep elements if available
