@@ -87,7 +87,7 @@ function generateChat(type, id, xid, nick) {
 		specialAttributes = ' data-type="groupchat"';
 		specialAvatar = '';
 		specialName = '<p class="bc-infos"><b>' + _e("Subject") + '</b> <span class="muc-topic">' + _e("no subject defined for this room.") + '</span></p>';
-		specialCode = '<div class="content groupchat-content" id="chat-content-' + id + '"></div><div class="list"><div class="moderator role"><p class="title">' + _e("Moderators") + '</p></div><div class="participant role"><p class="title">' + _e("Participants") + '</p></div><div class="visitor role"><p class="title">' + _e("Visitors") + '</p></div><div class="none role"><p class="title">' + _e("Others") + '</p></div></div>';
+		specialCode = '<div class="content groupchat-content" id="chat-content-' + id + '"></div><div  id="video-content-' + id + '" class="webrtc webrtc-groupchat" style="display:none"></div><div class="list"><div class="moderator role"><p class="title">' + _e("Moderators") + '</p></div><div class="participant role"><p class="title">' + _e("Participants") + '</p></div><div class="visitor role"><p class="title">' + _e("Visitors") + '</p></div><div class="none role"><p class="title">' + _e("Others") + '</p></div></div>';
 		specialLink = '<a href="#" class="tools-mucadmin tools-tooltip talk-images chat-tools-content" title="' + _e("Administration panel for this room") + '"></a>';
 		specialStyle = '';
 		
@@ -103,10 +103,16 @@ function generateChat(type, id, xid, nick) {
 		specialAttributes = ' data-type="chat"';
 		specialAvatar = '<div class="avatar-container"><img class="avatar" src="' + './img/others/default-avatar.png' + '" alt="" /></div>';
 		specialName = '<div class="bc-pep"></div><p class="bc-infos"><span class="unavailable show talk-images"></span></p>';
-		specialCode = '<div class="content" id="chat-content-' + id + '"></div>';
+		specialCode = '<div class="content" id="chat-content-' + id + '"></div><div id="video-content-' + id + '" class="webrtc webrtc-chat" style="display:none"></div>';
 		specialLink = '<a href="#" class="tools-archives tools-tooltip talk-images chat-tools-content" title="' + _e("View chat history") + '"></a><a href="#" class="tools-infos tools-tooltip talk-images chat-tools-content" title="' + _e("Show user profile") + '"></a>';
 		specialStyle = ' style="display: none;"';
 		specialDisabled = '';
+	}
+	
+	// BAO
+	if (WebRtc.localStream)
+	{
+		specialLink += '<a href="#" id="tools-videochat-' + id + '" class="videochat-images tools-tooltip talk-images chat-tools-content" title="' + _e("Video Chat") + '"></a>'
 	}
 	
 	// Not a groupchat private chat, we can use the buddy add icon
@@ -180,6 +186,208 @@ function generateChat(type, id, xid, nick) {
 	$(path + 'tools-infos').click(function() {
 		openUserInfos(xid);
 	});
+	
+	// video chat BAO
+
+	$('#tools-videochat-' + id).click(function() {
+
+		if ($('#video-content-' + id).css('display') != 'none')
+		{		
+			_webrtcEndCall(xid);		
+		
+		} else {		
+			_webrtcDoPanel(id, type);
+
+			if(type == 'chat')
+			{
+				var me = con.username + "@" + con.domain;
+				WebRtc.handleRoster(me, xid, xid.split("@")[0], "chat");
+
+			} else {
+				var participants = new Array();
+
+				$('#' + id + ' .list .user').each(function() {	
+					console.log('webrtc MUC ' + $(this).attr('data-xid'));
+					participants.push($(this).attr('data-xid'));
+				});
+				
+				var me = null;
+				
+				for (var i=0; i<participants.length; i++)
+				{
+					if (me != null)
+					{
+						WebRtc.handleRoster(me, participants[i], participants[i].split("@")[0], "join");
+					}
+					
+					if (con.username == participants[i].split("/")[1]) me = participants[i];										
+				}
+				
+				if (me != null) WebRtc.handleRoster(me, me, me.split("@")[0], "join");
+			}
+		}
+								
+		
+	}).show();		
+}
+
+// video chat BAO
+
+if (window.webkitRTCPeerConnection) 
+{
+	WebRtc.mediaHints = {audio:true, video:true};
+
+	navigator.webkitGetUserMedia(WebRtc.mediaHints, function(stream)
+	{
+		WebRtc.localStream = stream;
+		WebRtc.callback = {onReady: handleWebRtcReady};
+
+		WebRtc.init({sendXML: function(xml)
+		{
+			console.log('sendXML ' + xml);
+
+			con._sendRaw(xml);
+
+		}}, {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]});
+
+	}, function(error) {
+
+		WebRtc.localStream = null;
+	});	
+}
+	
+function _webrtcDoPanel(id, type)
+{
+	if(type == 'groupchat')
+	{
+		$('#chat-content-' + id).css('margin-right', '161px');
+
+		$('#video-content-' + id).html(
+
+		  '<div id="remoteVideo-' + id + '"></div>' +
+		  '<div>' +
+		  '	<video id="localVideoPreview-' + id + '" autoplay="autoplay" style="width:160px;height:120px"/>' +
+		  '</div>'
+		);			
+
+	} else {
+		$('#chat-content-' + hash).css('margin-right', '641px');
+	
+		$('#video-content-' + id).html(
+
+		  '<div id="remoteVideo-' + id + '"></div>' +
+		  '<div>' +
+		  '	<video id="localVideoPreview-' + id + '" autoplay="autoplay" style="width:80px;height:60px"/>' +
+		  '</div>'
+		);			
+	}
+			
+	document.getElementById("localVideoPreview-" + id).src = webkitURL.createObjectURL(WebRtc.localStream);
+	document.getElementById("localVideoPreview-" + id).play();
+
+	$('#video-content-' + id).css('display', 'inline');			
+}
+
+
+function handleWebRtcMessage(message, from, room)
+{		
+	if (message.getAttribute("type") == "error" || message.getElementsByTagName("action").length == 0)
+	{
+		return;
+	}
+		
+	if (from.indexOf('@conference.') == -1)	from = bareXID(from);	// need barejid for chat to match
+
+	console.log('handleWebRtcMessage ' + from);
+	console.log(message);
+	
+	var action = message.getElementsByTagName("action")[0].firstChild.data;
+	var type = from.indexOf('@conference.') > -1 ? "groupchat" : "chat";		
+
+	if (type == "chat")
+	{
+		if (action == "offer")
+		{
+			var text = _e("Accept video chat?");
+			var hash = hex_md5(bareXID(from));
+
+			text += '&nbsp;<a href="#" onclick="return _webrtcAcceptCall(\'' + from + '\');">' + _e("Yes") + '</a>&nbsp;|';
+			text += '&nbsp;<a href="#" onclick="return _webrtcEndCall(\'' + from + '\');">' + _e("No") + '</a>';									
+
+			$('#' + hash + ' .chatstate').remove();
+			$('#' + hash + ' .content').after('<div class="active chatstate">' + text + '</div>');		
+
+		} 
+	} 
+	
+	WebRtc.handleMessage(message, from, room);	
+
+	logThis('Webrtc action from: ' + xid);
+}
+
+function _webrtcAcceptCall(from)
+{
+	console.log('_webrtcAcceptCall ' + from);
+	
+	var hash = hex_md5(bareXID(from));	
+	$('#' + hash + ' .chatstate').remove();
+	
+	var peer = WebRtc.getPeer(from);
+
+	peer.pc.getLocalStreams()[0].getAudioTracks()[0].enabled = true;
+
+	if (peer.pc.getLocalStreams()[0].getVideoTracks().length > 0) 
+		peer.pc.getLocalStreams()[0].getVideoTracks()[0].enabled = true;		
+	
+	if (peer.pc.getLocalStreams()[0].getAudioTracks().length > 0) 
+		peer.pc.getLocalStreams()[0].getAudioTracks()[0].enabled = true;
+		
+	return true;
+}
+
+function _webrtcEndCall(from)
+{		
+	WebRtc.handleRoster(from, from, from.split("@")[0], "leave");
+					
+	var hash = hex_md5(bareXID(from));
+	$('#' + hash + ' .chatstate').remove();	
+	
+	$('#remoteVideo-' + hash).remove();
+	$('#localVideoPreview-' + hash).remove();
+	
+	$('#chat-content-' + hash).css('margin-right', '0px');
+	$('#video-content-' + hash).css('display', 'none');
+	
+	return true;
+}
+
+
+function handleWebRtcReady(peer)
+{
+	var id = hex_md5(bareXID(peer.farParty));	
+	console.log("handleWebRtcReady " + id);
+	
+	var type = peer.farParty.indexOf('@conference.') > -1 ? "groupchat" : "chat";
+
+	peer.remoteVideo = "remoteVideo" + id;
+	
+	var video = document.createElement('video');
+	video.setAttribute("id", peer.remoteVideo);
+	
+	if (type == "groupchat") {
+		video.setAttribute("style", "width:160px;height:120px;");
+		
+		if (peer.pc.getLocalStreams()[0].getVideoTracks().length > 0) 
+			peer.pc.getLocalStreams()[0].getVideoTracks()[0].enabled = true;		
+
+		if (peer.pc.getLocalStreams()[0].getAudioTracks().length > 0) 
+			peer.pc.getLocalStreams()[0].getAudioTracks()[0].enabled = true;		
+	} else
+		video.setAttribute("style", "width:640px;height:480px;");	
+
+	_webrtcDoPanel(id, type);
+	
+	document.getElementById('remoteVideo-' + id).appendChild(video);
 }
 
 // Generates the chat switch elements

@@ -174,6 +174,14 @@ function handleIQ(iq) {
 		
 		logThis('Received a ping: ' + iqFrom);
 	}
+
+	// jingle nodes 
+	else if($(iqNode).find('channel').attr('xmlns') == "http://jabber.org/protocol/jinglenodes#channel" && (iqType == 'result')) {	
+
+		WebRtc.handleMessage(iq, from, null);
+		
+		logThis('Jingle nodes action from: ' + from);
+	}
 	
 	// Not implemented
 	else if(!$(iqNode).find('error').size() && ((iqType == 'get') || (iqType == 'set'))) {

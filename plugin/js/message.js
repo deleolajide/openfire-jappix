@@ -41,7 +41,28 @@ function handleMessage(message) {
 		xid = from;
 		hash = hex_md5(xid);
 	}
-	
+
+
+	// BAO webrtc
+
+	if($(node).find('webrtc').size()) 
+	{
+		if(!GCUser)
+		{
+			fromName = getBuddyName(xid);
+			
+			if(!exists('#' + hash)) 
+			{
+				chatCreate(hash, xid, fromName, type);
+				soundPlay(0);
+			}
+		}
+
+		handleWebRtcMessage(node, from, xid.split("@")[0]);
+				
+		return false;
+	}
+		
 	// Get message date
 	var time, stamp, d_stamp;
 	
@@ -127,6 +148,7 @@ function handleMessage(message) {
 		
 		return false;
 	}
+	
 	
 	// OOB message
 	if(message.getChild('x', NS_XOOB)) {
