@@ -42,6 +42,12 @@ Last revision: 22/08/12
 	background-repeat: no-repeat;
 }
 
+/* BAO */
+
+.videochat-images {
+	background-image: url(../img/sources/icons/webcam.png);
+	background-repeat: no-repeat;
+}
 .smileys-images {
 	background-image: url(../img/sprites/smileys.png);
 	background-repeat: no-repeat;

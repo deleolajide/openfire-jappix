@@ -120,6 +120,22 @@ Last revision: 21/06/12
 	-webkit-box-shadow: inset 0 3px 10px #e8e8e8;
 }
 
+#page-engine .webrtc {
+	font-size: 0.9em;
+	position: absolute;
+	top: 93px;
+	bottom: 29px;
+	overflow: auto;
+}
+
+#page-engine .webrtc-chat{
+	right: 0px;
+}
+
+#page-engine .webrtc-groupchat{
+	right: 191px;
+}
+
 #page-engine .content {
 	left: 0;
 	padding: 12px 14px 0;

@@ -7,7 +7,7 @@ This is the JSJaC library for Jappix (from trunk)
 
 Licenses: Mozilla Public License version 1.1, GNU GPL, AGPL
 Authors: Stefan Strigler, Valérian Saliou, Zash, Maranda
-Last revision: 08/10/12
+Last revision: 31/03/13
 
 */
 
@@ -294,13 +294,13 @@ if (window.XMLSerializer &&
 String.prototype.htmlEnc = function() {
   if(!this)
     return this;
-  
-  var str = this.replace(/&/g,"&amp;");
-  str = str.replace(/</g,"&lt;");
-  str = str.replace(/>/g,"&gt;");
-  str = str.replace(/\"/g,"&quot;");
-  str = str.replace(/\n/g,"<br />");
-  return str;
+
+  return this.replace(/&/g,"&amp;")
+             .replace(/</g,"&lt;")
+             .replace(/>/g,"&gt;")
+             .replace(/\'/g,"&#039;")
+             .replace(/\"/g,"&quot;")
+             .replace(/\n/g,"<br />");
 };
 
 /**
