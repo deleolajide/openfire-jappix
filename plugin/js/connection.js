@@ -33,8 +33,16 @@ function doLogin(lNick, lServer, lPass, lResource, lPriority, lRemember, loginOp
 		else
 			oArgs.httpbase = HOST_BOSH;
 		
-		// We create the new http-binding connection
-		con = new JSJaCHttpBindingConnection(oArgs);
+		if ("WebSocket" in window || "MozWebSocket" in window)
+		{
+			// We create the new openfire websockets connection
+			con = new JSJaCOpenfireWSConnection(oArgs);	
+			
+		} else {
+		
+			// We create the new http-binding connection
+			con = new JSJaCHttpBindingConnection(oArgs);
+		}
 		
 		// And we handle everything that happen
 		setupCon(con,oExtend);
