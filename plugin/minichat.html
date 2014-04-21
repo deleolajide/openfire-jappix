@@ -1,49 +1,43 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<link rel="stylesheet" type="text/css" href="css/mini.css" />
-<script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="php/get.php?l=en&t=js&g=mini.xml"></script>
+<link rel="stylesheet" type="text/css" href="app/stylesheets/mini.css" />
+<script type="text/javascript" src="app/javascripts/jquery.js"></script>
+<script type="text/javascript" src="app/javascripts/origin.js"></script>
+<script type="text/javascript" src="app/javascripts/jxhr.js"></script>
+<script type="text/javascript" src="app/javascripts/base64.js"></script>
+<script type="text/javascript" src="app/javascripts/jsjac.js"></script>
+<script type="text/javascript" src="app/javascripts/jquery.json.js"></script>
+<script type="text/javascript" src="app/javascripts/jquery.timers.js"></script>
+<script type="text/javascript" src="app/javascripts/jquery.scrollto.js"></script>
+<script type="text/javascript" src="app/javascripts/system.js"></script>
+<script type="text/javascript" src="app/javascripts/constants.js"></script>
+<script type="text/javascript" src="app/javascripts/datastore.js"></script>
+<script type="text/javascript" src="app/javascripts/browser-detect.js"></script>
+<script type="text/javascript" src="app/javascripts/console.js"></script>
+<script type="text/javascript" src="app/javascripts/common.js"></script>
+<script type="text/javascript" src="app/javascripts/date.js"></script>
+<script type="text/javascript" src="app/javascripts/links.js"></script>
+<script type="text/javascript" src="app/javascripts/mini.js"></script>
 <script type="text/javascript">
 
 	function loaded()
 	{
-		// resize main body frrame
-
-		var myWidth;
-		var myHeight;
-
-		if ( typeof( window.innerWidth ) == 'number' )
-		{
-			myWidth = window.innerWidth;
-			myHeight = window.innerHeight;
-
-		} else if ( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
-
-			myWidth = document.documentElement.clientWidth;
-			myHeight = document.documentElement.clientHeight;
-
-		} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
-
-			myWidth = document.body.clientWidth;
-			myHeight = document.body.clientHeight;
-		}
-
-		jQuery('#mainbody').css('height', myHeight + 'px');
-		jQuery('#mainbody').css('width',  myWidth +  'px');
-
 		// load Jappix Mini
 
 		MINI_GROUPCHATS = [];
 		MINI_PASSWORDS = [];
 		MINI_CHATS = [];
+		HOST_BOSH = "/http-bind/";
+		HOST_MAIN = window.location.hostname;
+		JAPPIX_STATIC = window.location.href
 
 		// Add an animation
 		MINI_ANIMATE = true;
 		MINI_NICKNAME = "administrator";
 		MINI_RESOURCE = "minichat";
 
-		var username = getPageParameter('username', "admin@btg199251");
+		var username = getPageParameter('username', "dele.olajide@btg199251");
 		var password = getPageParameter('password', "969131");
 
         launchMini(false, false, window.location.hostname, username, password);
@@ -95,6 +89,5 @@
 </script>
 </head>
 <body topmargin="0" leftmargin="0" onload="loaded()" onunload="unloaded()" style="border-width:0px; overflow: hidden;margin-left: 0px; margin-top: 0px; margin-right: 0px; margin-bottom: 0px">
-<iframe id="mainbody" frameborder="0" src="http://www.igniterealtime.org" style="border:0px;width:100%;height:100%;"></iframe>
 </body>
 </html>
